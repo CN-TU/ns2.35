@@ -18,6 +18,8 @@ UnicornTcpAgent::UnicornTcpAgent()
 {
 	bind_bool("count_bytes_acked_", &count_bytes_acked_);
 	_training = false;
+	// FIXME: I guess that this means that the maximum burst length is disabled?
+	_maxburst = 0;
 	/* get whisker filename */
 	// const char *filename = getenv( "WHISKERS" );
 	// if ( !filename ) {
@@ -84,7 +86,7 @@ public:
 	TclObject* create(int, const char*const*) {
 		return (new UnicornTcpAgent());
 	}
-} class_rational_tcp;
+} class_unicorn_tcp;
 
 static class UnicornRenoTcpClass : public TclClass {
 public:
@@ -92,7 +94,7 @@ public:
 	TclObject* create(int, const char*const*) {
 		return (new UnicornRenoTcpAgent());
 	}
-} class_rational_reno_tcp;
+} class_unicorn_reno_tcp;
 
 static class UnicornNewRenoTcpClass : public TclClass {
 public:
@@ -100,7 +102,7 @@ public:
 	TclObject* create(int, const char*const*) {
 		return (new UnicornNewRenoTcpAgent());
 	}
-} class_rational_newreno_tcp;
+} class_unicorn_newreno_tcp;
 
 /*
  * initial_window() is called in a few different places in tcp.cc.
@@ -125,6 +127,7 @@ UnicornTcpAgent::send_helper(int maxburst)
 	 */
 
 	/* schedule wakeup */
+	// FIXME: I suppose that this can never happen?
 	if ( t_seqno_ <= highest_ack_ + window() && t_seqno_ < curseq_ ) {
 		// const double now( Scheduler::instance().clock() );
 		// const double time_since_last_send( now - _last_send_time );
