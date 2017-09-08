@@ -21,7 +21,8 @@ class RationalTcpAgent : public virtual TcpAgent {
 private:
 	const WhiskerTree *_whiskers;
 	Memory _memory;
-	double _intersend_time;
+	//	double _intersend_time;
+	TracedDouble _intersend_time;
 
 public:
 	RationalTcpAgent();
@@ -40,6 +41,7 @@ public:
 protected:
 	virtual void delay_bind_init_all();
 	virtual int delay_bind_dispatch(const char *varName, const char *localName, TclObject *tracer);
+	virtual void traceVar(TracedVar *v);
 	int tracewhisk_;	// trace whiskers?
 	double _last_send_time;
 	int count_bytes_acked_;

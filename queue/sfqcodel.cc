@@ -71,15 +71,12 @@
 static class sfqCoDelClass : public TclClass {
   public:
     sfqCoDelClass() : TclClass("Queue/sfqCoDel") {}
-    TclObject* create(int argc, const char*const* argv) {
-      EnsembleScheduler* scheduler = static_cast<EnsembleScheduler*>(TclObject::lookup(argv[4]));
-      return (new sfqCoDelQueue(scheduler) );
+    TclObject* create(int, const char*const*) {
+        return (new sfqCoDelQueue);
     }
 } class_codel;
 
-sfqCoDelQueue::sfqCoDelQueue(EnsembleScheduler* scheduler)
-    : EnsembleAwareQueue(scheduler),
-      maxbins_(MAXBINS),quantum_(0), tchan_(0), isolate_(0)
+sfqCoDelQueue::sfqCoDelQueue() :  maxbins_(MAXBINS), quantum_(0), tchan_(0), isolate_(0)
 {
     bind("interval_", &interval_);
     bind("target_", &target_);  // target min delay in clock ticks
@@ -203,8 +200,6 @@ void sfqCoDelQueue::enque(Packet* pkt)
 	  if(quantum_ > 0)	//if rounding by bytes
              bin_[i].deficit_ = quantum_;
 	}
-
-        if (_scheduler->busy() == false) _scheduler->reactivate_link();
 }
 
 extern "C" {
@@ -579,11 +574,4 @@ sfqCoDelQueue::trace(TracedVar* v)
         wrk[n+1] = 0;
         (void)Tcl_Write(tchan_, wrk, n+1);
     }
-}
-
-bool sfqCoDelQueue::empty() const {
-  for (int i=0; i < maxbins_; i++) {
-    if (bin_[i].q_->byteLength() > 0) return false;
-  }
-  return true;
 }

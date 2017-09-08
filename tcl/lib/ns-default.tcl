@@ -248,20 +248,23 @@ Queue/REM set pmark_ 0.0
 Queue/REM set markpkts_ false
 Queue/REM set qib_ false
 
-Queue/SFD set _last_drop_time   0.0
-Queue/SFD set _arr_rate_at_drop 0.0
-Queue/SFD set _current_arr_rate 0.0
 Queue/CoDel set curq_ 0.0
 Queue/CoDel set d_exp_ 0.0
 Queue/CoDel set interval_ 0.1
 Queue/CoDel set target_ .005
 
+Queue/SFD set _capacity 10000000
+Queue/SFD set _iter 1
+Queue/SFD set _qdisc 1
+Queue/SFD set _K 0.2
+Queue/SFD set _headroom 0.05
+
 Queue/sfqCoDel set curq_ 0.0
 Queue/sfqCoDel set d_exp_ 0.0
 Queue/sfqCoDel set interval_ 0.1
 Queue/sfqCoDel set target_ .005
-Queue/sfqCoDel set maxbins_ 1
-Queue/sfqCoDel set quantum_ 0
+Queue/sfqCoDel set maxbins_ 1024                                                                                                                               
+Queue/sfqCoDel set quantum_ 0                                                                                                                                  
 
 Queue/GK set ecnlim_ 0.95
 Queue/GK set mean_pktsize_ 1000
@@ -1127,10 +1130,18 @@ Agent/TCP/Newreno/Asym set g_ 0.125
 
 Agent/TCP/Rational set count_bytes_acked_ 1
 Agent/TCP/Rational set tracewhisk_ 0
+Agent/TCP/Rational set timestamps_ true
+Agent/TCP/Rational set _intersend_time 0.0
+
 Agent/TCP/Reno/Rational set count_bytes_acked_ 1
 Agent/TCP/Reno/Rational set tracewhisk_ 0
+Agent/TCP/Reno/Rational set timestamps_ true
+Agent/TCP/Reno/Rational set _intersend_time 0.0
+
 Agent/TCP/Newreno/Rational set count_bytes_acked_ 1
 Agent/TCP/Newreno/Rational set tracewhisk_ 0
+Agent/TCP/Newreno/Rational set timestamps_ true
+Agent/TCP/Newreno/Rational set _intersend_time 0.0
 
 # RFC793eduTcp -- 19990820, fcela@acm.org
 Agent/TCP/RFC793edu set add793expbackoff_  true 
@@ -1636,6 +1647,10 @@ Agent/PBC set modulationScheme 0
 
 Agent/MDART set macFailed_ true
 Agent/MDART set etxMetric_ true
+
+# Cellular link defaults
+CellLink set EWMA_SLOTS 10
+CellLink set TIME_SLOT_DURATION 0.00167
 
 # BrownianLink defaults
 DelayLink/BrownianLink set _min_rate 1000000

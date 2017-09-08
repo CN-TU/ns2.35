@@ -211,7 +211,6 @@ class REDQueue : public Queue {
 
 	void print_edp();	// for debugging
 	void print_edv();	// for debugging
-        virtual bool empty() const override;
 
 };
 

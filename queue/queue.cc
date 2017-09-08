@@ -82,22 +82,10 @@ void PacketQueue::remove(Packet* pkt, Packet *prev) //XXX: screwy
 
 void QueueHandler::handle(Event*)
 {
-      if(active_queue_) queue_.resume();
+	queue_.resume();
 }
-
 
 Queue::~Queue() {
-}
-
-int Queue::command(int argc, const char*const* argv) 
-{
-	if (argc==2) {
-		if (strcmp(argv[1], "deactivate_queue") == 0) {
-                	qh_.deactivate();
-			return (TCL_OK);
-		}
-	}
-	return Connector::command(argc, argv);
 }
 
 Queue::Queue() : Connector(), blocked_(0), unblock_on_resume_(1), qh_(*this),
@@ -113,7 +101,6 @@ Queue::Queue() : Connector(), blocked_(0), unblock_on_resume_(1), qh_(*this),
 	bind("util_check_intv_", &util_check_intv_);
 	bind("util_records_", &util_records_);
 
-	qh_.activate();
 	if (util_records_ > 0) {
 		util_buf_ = new double[util_records_];
 		if (util_buf_ == NULL) {
@@ -248,45 +235,4 @@ void Queue::reset()
 	while ((p = deque()) != 0)
 		drop(p);
 }
-/* ANIRUDH: Queue interface widening to support tighter queue-scheduler coupling */
 
-bool Queue::empty() const
-{
-  printf("Empty() not implemented. Aborting ... \n");
-  exit(5);
-  return false;
-}
-
-double Queue::get_hol() const
-{
-  printf("get_hol() not implemented. Aboriting ... \n");
-  exit(6);
-  return -1.0;
-}
-
-double Queue::get_arrival_rate()
-{
-  printf("get_arrival_rate() not implemented. Aborting ... \n");
-  exit(7);
-  return -1.0;
-}
-
-Packet* Queue::get_head() const
-{
-  printf("get_head() not implemented. Aborting ... \n");
-  exit(7);
-  return nullptr;
-}
-
-int Queue::length() const
-{
-  printf("length() not implemented. Aborting ...\n");
-  exit(7);
-  return -1;
-}
-int Queue::byteLength() const
-{
-  printf("byteLength() not implemented. Aborting ...\n");
-  exit(7);
-  return -1;
-}

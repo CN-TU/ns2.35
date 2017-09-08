@@ -1,12 +1,7 @@
 #! /usr/bin/python
 import sys
-
-#cmd line args
 fh=open(sys.argv[1])
 duration=float(sys.argv[2])
-percentile_requested=float(sys.argv[3])
-
-# Per flow stats
 drop_stats=dict()
 send_stats=dict()
 recv_stats=dict()
@@ -46,15 +41,15 @@ for line in fh.readlines() :
     if (src_addr, dst_addr, protocol ) not in send_stats :
       send_stats[ (src_addr, dst_addr, protocol) ] = pkt_size_bits;
       delay_stats[ (src_addr, dst_addr, protocol) ] = [];
-    else :
+    else : 
       send_stats[ (src_addr, dst_addr, protocol) ] += pkt_size_bits;
     enqueued[ pkt_num ] = time_stamp;
 
   if ( action == "r" ) :
-    #received at the second router
+    #received at the second router 
     if (src_addr, dst_addr, protocol ) not in recv_stats :
       recv_stats[ (src_addr, dst_addr, protocol) ] = pkt_size_bits;
-    else :
+    else : 
       recv_stats[ (src_addr, dst_addr, protocol) ] += pkt_size_bits;
     received[ pkt_num ] = time_stamp
     delay_stats[ (src_addr, dst_addr, protocol) ] += [received[pkt_num]- enqueued[pkt_num]]
@@ -63,10 +58,10 @@ for line in fh.readlines() :
     # dropped packet
     if (src_addr, dst_addr, protocol ) not in drop_stats :
       drop_stats[ (src_addr, dst_addr, protocol) ] = pkt_size_bits;
-    else :
+    else : 
       drop_stats[ (src_addr, dst_addr, protocol) ] += pkt_size_bits;
 
-for pair in sorted(send_stats.iterkeys()) :
+for pair in send_stats :
   print "Pair :",pair
   print "sent :",send_stats[pair]/duration, "bits/second"
   if pair not in recv_stats :
@@ -79,15 +74,12 @@ for pair in sorted(send_stats.iterkeys()) :
     print "dropped",drop_stats[pair]/duration,"bits/second"
   delay_stats[pair].sort();
   flow_throughputs[ pair ] = recv_stats[ pair ]/duration
-  flow_percentiles[ pair ] = 1000*delay_stats[pair][int(percentile_requested*len(delay_stats[pair]))]
-  print percentile_requested," %ile delay :", flow_percentiles[ pair ],"ms", "samples :",len(delay_stats[ pair ])
+  flow_percentiles[ pair ] = 1000*delay_stats[pair][int(float(sys.argv[3])*len(delay_stats[pair]))]
+  print sys.argv[3]," %ile delay :", flow_percentiles[ pair ],"ms"
   print "====================\n"
 
 print>>sys.stderr,"Aggregate statistics"
 print>>sys.stderr,"Total throughput %.0f"%sum(flow_throughputs.values()), "bits/second"
-print>>sys.stderr,"Average",percentile_requested,"percentile %.0f"%(sum( flow_percentiles.values() )/len( flow_percentiles.values() )), "ms"
-flow_utilization=[]
-for pair in flow_throughputs :
-  flow_utilization += [flow_throughputs[pair]/(1.0e6*pair[1])]
-print>>sys.stderr,"Throughput fairness",jain_fainess( flow_utilization )
+print>>sys.stderr,"Average",sys.argv[3],"percentile %.0f"%(sum( flow_percentiles.values() )/len( flow_percentiles.values() )), "ms"
+print>>sys.stderr,"Throughput fairness",jain_fainess( flow_throughputs.values() )
 print>>sys.stderr,"Delay fairness", jain_fainess( map ( lambda x : 1.0/x , flow_percentiles.values() ) )

@@ -106,7 +106,6 @@ class Agent : public Connector {
 	inline nsaddr_t& dport() { return dst_.port_; }
 	void set_pkttype(packet_t pkttype) { type_ = pkttype; }
 	inline packet_t get_pkttype() { return type_; }
-        Packet* allocpkt() const;	// alloc + set up new pkt
 
  protected:
 	int command(int argc, const char*const* argv);
@@ -115,6 +114,7 @@ class Agent : public Connector {
 
 	virtual void recvBytes(int bytes);
 	virtual void idle();
+	Packet* allocpkt() const;	// alloc + set up new pkt
 	Packet* allocpkt(int) const;	// same, but w/data buffer
 	void initpkt(Packet*) const;	// set up fields in a pkt
 

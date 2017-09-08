@@ -41,7 +41,6 @@ static const char rcsid[] =
 #include "config.h"
 #include "classifier.h"
 #include "packet.h"
-#include "link/cell_header.h"
 
 static class ClassifierClass : public TclClass {
 public:

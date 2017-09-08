@@ -114,10 +114,7 @@ class QueueHandler : public Handler {
 public:
 	inline QueueHandler(Queue& q) : queue_(q) {}
 	void handle(Event*);
-	void deactivate() { active_queue_ = 0; }
-	void activate() { active_queue_ = 1; }
 private:
-	int active_queue_;
 	Queue& queue_;
 };
 
@@ -134,14 +131,10 @@ public:
 	void unblock() { blocked_ = 0; }
 	void block() { blocked_ = 1; }
 	int limit() { return qlim_; }
-
-        /* Additions to support SFD etc */
-        virtual bool empty() const;
-        virtual double get_hol() const;
-        virtual double get_arrival_rate();
-	virtual int length() const;	/* number of pkts in q */
-	virtual int byteLength() const;	/* number of bytes in q */
-	virtual Packet* get_head() const; 
+	int length() { return pq_->length(); }	/* number of pkts currently in
+						 * underlying packet queue */
+	int byteLength() { return pq_->byteLength(); }	/* number of bytes *
+						 * currently in packet queue */
 	/* mean utilization, decaying based on util_weight */
 	virtual double utilization (void);
 
@@ -149,16 +142,13 @@ public:
 	   Returns the maximum of recent measurements stored in util_buf_*/
 	double peak_utilization(void);
 	virtual ~Queue();
-	QueueHandler qh_;
-
-	int command(int argc, const char*const* argv);
-
 protected:
 	Queue();
 	void reset();
 	int qlim_;		/* maximum allowed pkts in queue */
 	int blocked_;		/* blocked now? */
 	int unblock_on_resume_;	/* unblock q on idle? */
+	QueueHandler qh_;
 	PacketQueue *pq_;	/* pointer to actual packet queue 
 				 * (maintained by the individual disciplines
 				 * like DropTail and RED). */

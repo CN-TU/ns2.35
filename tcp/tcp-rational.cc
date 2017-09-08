@@ -64,6 +64,7 @@ RationalTcpAgent::~RationalTcpAgent()
 void
 RationalTcpAgent::delay_bind_init_all()
 {
+	delay_bind_init_one("_intersend_time");
 	TcpAgent::delay_bind_init_all();
         reset();
 }
@@ -72,9 +73,8 @@ int
 RationalTcpAgent::delay_bind_dispatch(const char *varName, const char *localName, 
 				   TclObject *tracer)
 {
-        if (delay_bind(varName, localName, "tracewhisk_", &tracewhisk_, tracer))  {
-		return TCL_OK;
-	}
+        if (delay_bind(varName, localName, "tracewhisk_", &tracewhisk_, tracer)) return TCL_OK;
+	if (delay_bind(varName, localName, "_intersend_time", &_intersend_time, tracer)) return TCL_OK;
         return TcpAgent::delay_bind_dispatch(varName, localName, tracer);
 }
 
@@ -111,6 +111,7 @@ double
 RationalTcpAgent::initial_window()
 {
 	_memory.reset();
+	cwnd_ = 0;
 	update_cwnd_and_pacing();
 	return cwnd_;
 }
@@ -131,7 +132,8 @@ RationalTcpAgent::send_helper(int maxburst)
 		const double time_since_last_send( now - _last_send_time );
 		const double wait_time( _intersend_time - time_since_last_send );
 		if ( wait_time <= 0 ) {
-			burstsnd_timer_.resched( 0 );
+			//			burstsnd_timer_.resched( 0 );
+			return;
 		} else {
 			burstsnd_timer_.resched( wait_time );
 		}
@@ -157,7 +159,7 @@ RationalTcpAgent::send_idle_helper()
 	const double time_since_last_send( now - _last_send_time );
 	const double wait_time( _intersend_time - time_since_last_send );
 
-	if ( wait_time <= .0001 ) {
+	if ( wait_time <= .00000001 ) {
 		return;
 	} else {
 		burstsnd_timer_.resched( wait_time );
@@ -194,7 +196,10 @@ RationalTcpAgent::recv_newack_helper(Packet *pkt)
 	}
 	newack(pkt);		// updates RTT to set RTO properly, etc.
 	maxseq_ = ::max(maxseq_, highest_ack_);
-	update_memory( RemyPacket( 1000 * tcph->ts_echo(), 1000 * now ) );
+
+	int timestep = 1000;
+
+	update_memory( RemyPacket( timestep * tcph->ts_echo(), timestep * now ) );
 	update_cwnd_and_pacing();
 	/* if the connection is done, call finish() */
 	if ((highest_ack_ >= curseq_-1) && !closed_) {
@@ -217,18 +222,34 @@ RationalTcpAgent::update_cwnd_and_pacing( void )
 
 	unsigned int new_cwnd = current_whisker.window( (unsigned int)cwnd_ );
 
-	if ( new_cwnd > 1024 ) {
-		new_cwnd = 1024;
+	if ( new_cwnd > 16384 ) {
+		new_cwnd = 16384;
 	}
 
 	cwnd_ = new_cwnd;
-	_intersend_time = .001 * current_whisker.intersend();
+	double old_intersend_time = _intersend_time;
+
+	double timestep_inverse = .001;
+
+	_intersend_time = timestep_inverse * current_whisker.intersend();
+	double _print_intersend = _intersend_time;
+
+	const double now( Scheduler::instance().clock() );
+	const double time_since_last_send( now - _last_send_time );
+	const double wait_time( _intersend_time - time_since_last_send );
+	const double old_wait_time( old_intersend_time - time_since_last_send );
+
 	if (tracewhisk_) {
-		fprintf( stderr, "memory: %s falls into whisker %s\n", _memory.str().c_str(), current_whisker.str().c_str() );
-		fprintf( stderr, "\t=> cwnd now %u, intersend_time now %f\n", new_cwnd, _intersend_time );
+		fprintf( stderr, "%g: %s whisker %s newcwnd: %u newintersend: %f\n", now, _memory.str().c_str(), current_whisker.str().c_str(), new_cwnd, _print_intersend );
 	}
 
-	//	fprintf( stderr, "cwnd now %u, intersend_time now %f\n", new_cwnd, _intersend_time );
+	if ( wait_time < old_wait_time ) {
+		if ( wait_time <= 0 ) {
+			burstsnd_timer_.resched( 0 );
+		} else {
+			burstsnd_timer_.resched( wait_time );
+		}
+	}
 }
 
 void
@@ -239,4 +260,30 @@ RationalTcpAgent::timeout_nonrtx( int tno )
 	} else if ( tno == TCP_TIMER_BURSTSND ) {
 		send_much( 1, TCP_REASON_TIMEOUT, maxburst_ );
 	}
+}
+
+
+void 
+RationalTcpAgent::traceVar(TracedVar *v)
+{
+	#define TCP_WRK_SIZE 512
+	if (!channel_)
+		return;
+
+	double curtime;
+	Scheduler& s = Scheduler::instance();
+	char wrk[TCP_WRK_SIZE];
+
+	curtime = &s ? s.clock() : 0;
+	
+	if (v == &_intersend_time) {
+		snprintf(wrk, TCP_WRK_SIZE,
+			 "%-8.5f %-2d %-2d %-2d %-2d %s %-6.6f\n",
+			 curtime, addr(), port(), daddr(), dport(),
+			 v->name(), double(*((TracedDouble*) v))); 
+		(void)Tcl_Write(channel_, wrk, -1);
+	} else {
+		TcpAgent::traceVar(v);
+	}
+
 }

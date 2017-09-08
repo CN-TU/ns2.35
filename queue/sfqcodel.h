@@ -51,12 +51,9 @@
 
 #include "queue.h"
 #include <stdlib.h>
-#include <float.h>
 #include "agent.h"
 #include "template.h"
 #include "trace.h"
-#include "queue/ensemble-aware-queue.h"
-#include "link/ensemble-scheduler.h"
 
 #define MAXBINS 1024
 
@@ -82,9 +79,9 @@ struct dodequeResult { Packet* p; int ok_to_drop; };
         bindesc* next;
     } ;
 
-class sfqCoDelQueue : public EnsembleAwareQueue {
+class sfqCoDelQueue : public Queue {
   public:   
-    sfqCoDelQueue(EnsembleScheduler* scheduler);
+    sfqCoDelQueue();
 
 /* The following lines were added by CableLabs for their purposes but
  * require other changes to ns-2 so are commented out for general use
@@ -96,8 +93,6 @@ class sfqCoDelQueue : public EnsembleAwareQueue {
                          // currently in all bins
 */
 
-    /* Override functions from Queue */
-    virtual bool empty() const override;
 
   protected:
     // Stuff specific to the CoDel algorithm

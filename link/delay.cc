@@ -40,7 +40,6 @@ static const char rcsid[] =
 #include "delay.h"
 #include "mcast_ctrl.h"
 #include "ctrMcast.h"
-#include "link/cell_header.h"
 
 static class LinkDelayClass : public TclClass {
 public:
@@ -53,8 +52,7 @@ public:
 LinkDelay::LinkDelay() 
 	: dynamic_(0), 
 	  latest_time_(0),
-	  itq_(0),
-          active_link_(true)
+	  itq_(0)
 {
 	_bits_dequeued = 0;
 	bind_bw("bandwidth_", &bandwidth_);
@@ -73,10 +71,6 @@ int LinkDelay::command(int argc, const char*const* argv)
 		if ( strcmp(argv[1], "total" ) == 0 ) {
 			fprintf( stderr, " Total number of bytes is %lu \n", _bits_dequeued );
 			return TCL_OK;
-		}
-		if (strcmp(argv[1], "deactivate_link") == 0) {
-			active_link_=false;	
-			return (TCL_OK);
 		}
 	} else if (argc == 6) {
 		if (strcmp(argv[1], "pktintran") == 0) {
@@ -115,21 +109,10 @@ void LinkDelay::recv(Packet* p, Handler* h)
  		}
 
 	} else {
-                /* ANIRUDH: Cellular Reassembly logic */
-                if (hdr_cmn::access(p)->ptype()==PT_CELLULAR) {
-                  if (!hdr_cellular::access(p)->last_fragment_) {
-                    /* Haven't yet received the last fragment */
-                    Packet::free(p);
-                    return;
-                  } else {
-                    hdr_cmn::access(p)->ptype()=hdr_cellular::access(p)->tunneled_type_;
-                    hdr_cmn::access(p)->size() =hdr_cellular::access(p)->original_size_;
-                  }
-                }
 		s.schedule(target_, p, txt + delay_);
 	}
-	_bits_dequeued += (8 * hdr_cmn::access(p)->size());
-	if (active_link_) s.schedule(h, &intr_, txt);
+	_bits_dequeued+= (8 * hdr_cmn::access(p)->size());
+	s.schedule(h, &intr_, txt);
 }
 
 void LinkDelay::send(Packet* p, Handler*)
@@ -196,26 +179,4 @@ void LinkDelay::pktintran(int src, int group)
 		}
 	}
         //printf ("%f %d %d %d %d\n", Scheduler::instance().clock(), total_[0], total_[1], total_[2],total_[3]);
-}
-
-void LinkDelay::set_bandwidth(double bandwidth) {
-  bandwidth_ = bandwidth;
-  auto now = Scheduler::instance().clock();
-  bw_history[now] = bandwidth;
-}
-
-double LinkDelay::get_bw_in_past(double req_time) const {
-  /* Find the largest stored time less than equal to req_time */
-  
-  /* Find the first stored time strictly greater than req_time */
-  auto upperb = bw_history.upper_bound(req_time);
-  if (bw_history.empty()) {
-    /* No bandwidth has been explictly set yet */
-    return bandwidth();
-  } else if (upperb == bw_history.begin()) {
-    /* Smallest stored time is itself greater than req_time */
-    return upperb->second;
-  } else {
-    return (--upperb)->second;
-  }
 }
