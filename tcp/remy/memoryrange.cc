@@ -2,7 +2,7 @@
 
 using namespace std;
 
-bool MemoryRange::contains( const Memory & query ) const
+bool MemoryRange::contains( const RemyMemory & query ) const
 {
   return (query >= _lower) && (query < _upper);
 }

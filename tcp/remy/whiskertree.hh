@@ -12,10 +12,10 @@ private:
   std::vector< WhiskerTree > _children;
   std::vector< Whisker > _leaf;
 
-  const Whisker * whisker( const Memory & _memory ) const;
+  const Whisker * whisker( const RemyMemory & _memory ) const;
 
 public:
-  const Whisker & use_whisker( const Memory & _memory ) const;
+  const Whisker & use_whisker( const RemyMemory & _memory ) const;
 
   bool is_leaf( void ) const;
 

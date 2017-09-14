@@ -48,10 +48,10 @@ public:
 	NsObject();
 	virtual ~NsObject();
 	virtual void recv(Packet*, Handler* callback = 0) = 0;
-	// Monarch extn - used for logging reasons why the 
+	// Monarch extn - used for logging reasons why the
 	// pkt is handed off (eg droptargets)
 	virtual void recv(Packet* p, const char* s);
-	
+
 	//added for queue tracing -  ratul
 	virtual void recvOnly(Packet *) {};
 

@@ -23,7 +23,7 @@
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  */
 /* Ported from CMU/Monarch's code, nov'98 -Padma.
-   
+
    antenna.h
    super class for all antenna types
 */
@@ -40,7 +40,7 @@
 #ifndef ns_antenna_h
 #define ns_antenna_h
 
-#include "object.h"
+#include "../common/object.h"
 #include "lib/bsd-list.h"
 
 class Antenna;
@@ -50,7 +50,7 @@ class Antenna : public TclObject {
 
 public:
   Antenna();
-  
+
   virtual double getTxGain(double /*dX*/, double /*dY*/, double /*dZ*/,
 			   double /*lambda*/);
   // return the gain for a signal to a node at vector dX, dY, dZ
@@ -60,9 +60,9 @@ public:
 			   double /*lambda*/);
   // return the gain for a signal from a node at vector dX, dY, dZ
   // from the receiver at wavelength lambda
-  
+
   virtual Antenna * copy();
-  // return a pointer to a copy of this antenna that will return the 
+  // return a pointer to a copy of this antenna that will return the
   // same thing for get{Rx,Tx}Gain that this one would at this point
   // in time.  This is needed b/c if a pkt is sent with a directable
   // antenna, this antenna may be have been redirected by the time we
@@ -81,8 +81,8 @@ public:
 
 private:
   LIST_ENTRY(Antenna) link;
-  
-protected:  
+
+protected:
   double X_;			// position w.r.t. the node
   double Y_;
   double Z_;

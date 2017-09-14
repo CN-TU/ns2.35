@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const Whisker & WhiskerTree::use_whisker( const Memory & _memory ) const
+const Whisker & WhiskerTree::use_whisker( const RemyMemory & _memory ) const
 {
   const Whisker * ret( whisker( _memory ) );
 
@@ -20,7 +20,7 @@ const Whisker & WhiskerTree::use_whisker( const Memory & _memory ) const
   return *ret;
 }
 
-const Whisker * WhiskerTree::whisker( const Memory & _memory ) const
+const Whisker * WhiskerTree::whisker( const RemyMemory & _memory ) const
 {
   if ( !_domain.contains( _memory ) ) {
     return NULL;

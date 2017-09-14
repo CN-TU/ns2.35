@@ -20,7 +20,7 @@
 class RationalTcpAgent : public virtual TcpAgent {
 private:
 	const WhiskerTree *_whiskers;
-	Memory _memory;
+	RemyMemory _memory;
 	//	double _intersend_time;
 	TracedDouble _intersend_time;
 
@@ -47,7 +47,7 @@ protected:
 	int count_bytes_acked_;
 };
 
-/* 
+/*
  * Rational TCP with Reno.
  */
 
@@ -64,7 +64,7 @@ public:
 	virtual void output( int seqno, int reason ) { _last_send_time = Scheduler::instance().clock(); RenoTcpAgent::output( seqno, reason ); }
 };
 
-/* 
+/*
  * Rational TCP with NewReno.
  */
 class RationalNewRenoTcpAgent : public virtual NewRenoTcpAgent, public RationalTcpAgent {

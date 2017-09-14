@@ -70,7 +70,7 @@ RationalTcpAgent::delay_bind_init_all()
 }
 
 int
-RationalTcpAgent::delay_bind_dispatch(const char *varName, const char *localName, 
+RationalTcpAgent::delay_bind_dispatch(const char *varName, const char *localName,
 				   TclObject *tracer)
 {
         if (delay_bind(varName, localName, "tracewhisk_", &tracewhisk_, tracer)) return TCL_OK;
@@ -105,7 +105,7 @@ public:
 
 /*
  * initial_window() is called in a few different places in tcp.cc.
- * This function overrides the default. 
+ * This function overrides the default.
  */
 double
 RationalTcpAgent::initial_window()
@@ -116,10 +116,10 @@ RationalTcpAgent::initial_window()
 	return cwnd_;
 }
 
-void 
-RationalTcpAgent::send_helper(int maxburst) 
+void
+RationalTcpAgent::send_helper(int maxburst)
 {
-	/* 
+	/*
 	 * If there is still data to be sent and there is space in the
 	 * window, set a timer to schedule the next burst. Note that
 	 * we wouldn't get here if TCP_TIMER_BURSTSEND were pending,
@@ -140,11 +140,11 @@ RationalTcpAgent::send_helper(int maxburst)
 	}
 }
 
-/* 
- * Connection has been idle for some time. 
+/*
+ * Connection has been idle for some time.
  */
 void
-RationalTcpAgent::send_idle_helper() 
+RationalTcpAgent::send_idle_helper()
 {
 	const double now( Scheduler::instance().clock() );
 
@@ -169,12 +169,12 @@ RationalTcpAgent::send_idle_helper()
 /*
  * recv_newack_helper(pkt) is called from TcpAgent::recv() in tcp.cc when a
  * new cumulative ACK arrives.
- * Process a new ACK: update SRTT, make sure to call newack() of the parent 
+ * Process a new ACK: update SRTT, make sure to call newack() of the parent
  * class, and, most importantly, update cwnd according to the model.
  * This function overrides the default.
  */
 void
-RationalTcpAgent::recv_newack_helper(Packet *pkt) 
+RationalTcpAgent::recv_newack_helper(Packet *pkt)
 {
 	double now = Scheduler::instance().clock();
 	hdr_tcp *tcph = hdr_tcp::access(pkt);
@@ -208,7 +208,7 @@ RationalTcpAgent::recv_newack_helper(Packet *pkt)
 	}
 }
 
-void 
+void
 RationalTcpAgent::update_memory( const RemyPacket packet )
 {
 	std::vector< RemyPacket > packets( 1, packet );
@@ -263,7 +263,7 @@ RationalTcpAgent::timeout_nonrtx( int tno )
 }
 
 
-void 
+void
 RationalTcpAgent::traceVar(TracedVar *v)
 {
 	#define TCP_WRK_SIZE 512
@@ -275,12 +275,12 @@ RationalTcpAgent::traceVar(TracedVar *v)
 	char wrk[TCP_WRK_SIZE];
 
 	curtime = &s ? s.clock() : 0;
-	
+
 	if (v == &_intersend_time) {
 		snprintf(wrk, TCP_WRK_SIZE,
 			 "%-8.5f %-2d %-2d %-2d %-2d %s %-6.6f\n",
 			 curtime, addr(), port(), daddr(), dport(),
-			 v->name(), double(*((TracedDouble*) v))); 
+			 v->name(), double(*((TracedDouble*) v)));
 		(void)Tcl_Write(channel_, wrk, -1);
 	} else {
 		TcpAgent::traceVar(v);

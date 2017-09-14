@@ -19,7 +19,7 @@ UnicornTcpAgent::UnicornTcpAgent()
 	bind_bool("count_bytes_acked_", &count_bytes_acked_);
 	_training = false;
 	// FIXME: I guess that this means that the maximum burst length is disabled?
-	_maxburst = 0;
+	maxburst_ = 0;
 	/* get whisker filename */
 	// const char *filename = getenv( "WHISKERS" );
 	// if ( !filename ) {
@@ -70,7 +70,7 @@ UnicornTcpAgent::UnicornTcpAgent()
 // }
 
 // int
-// UnicornTcpAgent::delay_bind_dispatch(const char *varName, const char *localName, 
+// UnicornTcpAgent::delay_bind_dispatch(const char *varName, const char *localName,
 // 				   TclObject *tracer)
 // {
 // 	if (delay_bind(varName, localName, "tracewhisk_", &tracewhisk_, tracer))  {
@@ -106,20 +106,21 @@ public:
 
 /*
  * initial_window() is called in a few different places in tcp.cc.
- * This function overrides the default. 
+ * This function overrides the default.
  */
 double
 UnicornTcpAgent::initial_window()
 {
-	reset();
+	const double tickno = Scheduler::instance().clock();
+	Unicorn::reset(tickno);
 	update_cwnd_and_pacing();
 	return cwnd_;
 }
 
-void 
-UnicornTcpAgent::send_helper(int maxburst) 
+void
+UnicornTcpAgent::send_helper(int maxburst)
 {
-	/* 
+	/*
 	 * If there is still data to be sent and there is space in the
 	 * window, set a timer to schedule the next burst. Note that
 	 * we wouldn't get here if TCP_TIMER_BURSTSEND were pending,
@@ -140,10 +141,10 @@ UnicornTcpAgent::send_helper(int maxburst)
 	}
 }
 
-void output( int seqno, int reason ) {
+void UnicornTcpAgent::output( int seqno, int reason ) {
 	const double tickno = Scheduler::instance().clock();
-	Packet p( id, 0, tickno, _packets_sent );
-	_id_to_sent_during_action[id] = _put_actions;
+	remy::Packet p( 0, 0, tickno, seqno );
+	_id_to_sent_during_action[seqno] = _put_actions;
 	_outstanding_rewards[_put_actions]["sent"] += 1;
 	if (_last_send_time != 0) {
 		_outstanding_rewards[_put_actions]["intersend_duration_acc"] += tickno - _last_send_time;
@@ -151,15 +152,45 @@ void output( int seqno, int reason ) {
 	_packets_sent++;
 	_memory.packet_sent( p );
 	_last_send_time = tickno;
-	
-	TcpAgent::output( seqno, reason ); 
+
+	TcpAgent::output( seqno, reason );
 }
 
-/* 
- * Connection has been idle for some time. 
+void UnicornRenoTcpAgent::output( int seqno, int reason ) {
+	const double tickno = Scheduler::instance().clock();
+	remy::Packet p( 0, 0, tickno, seqno );
+	_id_to_sent_during_action[seqno] = _put_actions;
+	_outstanding_rewards[_put_actions]["sent"] += 1;
+	if (_last_send_time != 0) {
+		_outstanding_rewards[_put_actions]["intersend_duration_acc"] += tickno - _last_send_time;
+	}
+	_packets_sent++;
+	_memory.packet_sent( p );
+	_last_send_time = tickno;
+
+	RenoTcpAgent::output( seqno, reason );
+}
+
+void UnicornNewRenoTcpAgent::output( int seqno, int reason ) {
+	const double tickno = Scheduler::instance().clock();
+	remy::Packet p( 0, 0, tickno, seqno );
+	_id_to_sent_during_action[seqno] = _put_actions;
+	_outstanding_rewards[_put_actions]["sent"] += 1;
+	if (_last_send_time != 0) {
+		_outstanding_rewards[_put_actions]["intersend_duration_acc"] += tickno - _last_send_time;
+	}
+	_packets_sent++;
+	_memory.packet_sent( p );
+	_last_send_time = tickno;
+
+	NewRenoTcpAgent::output( seqno, reason );
+}
+
+/*
+ * Connection has been idle for some time.
  */
 void
-UnicornTcpAgent::send_idle_helper() 
+UnicornTcpAgent::send_idle_helper()
 {
 	const double now( Scheduler::instance().clock() );
 
@@ -184,12 +215,12 @@ UnicornTcpAgent::send_idle_helper()
 /*
  * recv_newack_helper(pkt) is called from TcpAgent::recv() in tcp.cc when a
  * new cumulative ACK arrives.
- * Process a new ACK: update SRTT, make sure to call newack() of the parent 
+ * Process a new ACK: update SRTT, make sure to call newack() of the parent
  * class, and, most importantly, update cwnd according to the model.
  * This function overrides the default.
  */
 void
-UnicornTcpAgent::recv_newack_helper(Packet *pkt) 
+UnicornTcpAgent::recv_newack_helper(Packet *pkt)
 {
 	double now = Scheduler::instance().clock();
 	hdr_tcp *tcph = hdr_tcp::access(pkt);
@@ -211,7 +242,7 @@ UnicornTcpAgent::recv_newack_helper(Packet *pkt)
 	}
 	newack(pkt);		// updates RTT to set RTO properly, etc.
 	maxseq_ = ::max(maxseq_, highest_ack_);
-	update_memory( Packet( tcph->seqno(), 1000 * tcph->ts_echo(), 1000 * now ) );
+	update_memory( remy::Packet( tcph->seqno(), 1000 * tcph->ts_echo(), 1000 * now ) );
 	update_cwnd_and_pacing();
 	/* if the connection is done, call finish() */
 	if ((highest_ack_ >= curseq_-1) && !closed_) {
@@ -220,26 +251,24 @@ UnicornTcpAgent::recv_newack_helper(Packet *pkt)
 	}
 }
 
-void 
-UnicornTcpAgent::update_memory( const Packet packet )
+void
+UnicornTcpAgent::update_memory(const remy::Packet packet)
 {
-	packets_received(packet);
-	// std::vector< Packet > packets( 1, packet );
-	// _memory.packets_received( packets );
+	std::vector<remy::Packet> packet_for_receive;
+	packet_for_receive.push_back(packet);
+	packets_received(packet_for_receive);
 }
 
 void
 UnicornTcpAgent::update_cwnd_and_pacing( void )
 {
-	const Whisker & current_whisker( _whiskers->use_whisker( _memory ) );
+	// const Whisker & current_whisker( _whiskers->use_whisker( _memory ) );
+	// unsigned int new_cwnd = current_whisker.window( (unsigned int)cwnd_ );
+	// if ( new_cwnd > 1024 ) {
+	// 	new_cwnd = 1024;
+	// }
 
-	unsigned int new_cwnd = current_whisker.window( (unsigned int)cwnd_ );
-
-	if ( new_cwnd > 1024 ) {
-		new_cwnd = 1024;
-	}
-
-	cwnd_ = new_cwnd;
+	cwnd_ = _the_window;
 	// _intersend_time = .001 * current_whisker.intersend();
 	// if (tracewhisk_) {
 	// 	fprintf( stderr, "memory: %s falls into whisker %s\n", _memory.str().c_str(), current_whisker.str().c_str() );

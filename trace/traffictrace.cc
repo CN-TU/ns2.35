@@ -1,7 +1,7 @@
 /* -*-	Mode:C++; c-basic-offset:8; tab-width:8; indent-tabs-mode:t -*- */
 /*
  * Copyright (c) Xerox Corporation 1997. All rights reserved.
- *  
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
@@ -48,9 +48,9 @@ static const char rcsid[] =
  * TraceFile::setup(), or TrafficTrace is not pointing to a TraceFile,
  * no guarantee about results.
  */
- 
+
 #include <sys/types.h>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <stdio.h>
 
 #include "config.h"
@@ -90,7 +90,7 @@ class TraceFile : public NsObject {
 	int command(int argc, const char*const* argv);
  private:
 	void recv(Packet*, Handler*); /* must be defined for NsObject */
-        int status_; 
+        int status_;
 	char *name_;  /* name of the file in which the trace is stored */
 	int nrec_;    /* number of records in the trace file */
 	struct tracerec *trace_; /* array holding the trace */
@@ -190,7 +190,7 @@ int TraceFile::setup()
 				return -1 ;
 			}
 			else {
-		
+
 				t->trec_time = ntohl(t->trec_time);
 				t->trec_size = ntohl(t->trec_size);
 			}
@@ -225,14 +225,14 @@ TrafficTrace::TrafficTrace()
 
 void TrafficTrace::init()
 {
-	if (tfile_) 
+	if (tfile_)
 		ndx_ = tfile_->setup();
 }
 
 int TrafficTrace::command(int argc, const char*const* argv)
 {
 	Tcl& tcl = Tcl::instance();
-	
+
 	if (argc == 3) {
 		if (strcmp(argv[1], "attach-tracefile") == 0) {
 			tfile_ = (TraceFile *)TclObject::lookup(argv[2]);
@@ -254,7 +254,7 @@ void TrafficTrace::timeout()
                 return;
 
         /* send a packet */
-	// Note:  May need to set "NEW_BURST" flag in sendmsg() for 
+	// Note:  May need to set "NEW_BURST" flag in sendmsg() for
 	// signifying a new talkspurt when using vat traces.
 	// (see expoo.cc, tcl/ex/test-rcvr.tcl)
 	agent_->sendmsg(size_);

@@ -7,7 +7,7 @@ using namespace std;
 
 static const double alpha = 1.0 / 8.0;
 
-void Memory::packets_received( const vector< RemyPacket > & packets )
+void RemyMemory::packets_received( const vector< RemyPacket > & packets )
 {
   for ( const auto &x : packets ) {
     const unsigned int rtt = x.tick_received - x.tick_sent;
@@ -42,7 +42,7 @@ void Memory::packets_received( const vector< RemyPacket > & packets )
   }
 }
 
-Memory::Memory( const RemyBuffers::Memory & dna )
+RemyMemory::RemyMemory( const RemyBuffers::Memory & dna )
   : _rec_send_ewma( dna.rec_send_ewma() ),
     _rec_rec_ewma( dna.rec_rec_ewma() ),
     _rtt_ratio( dna.rtt_ratio() ),
@@ -52,7 +52,7 @@ Memory::Memory( const RemyBuffers::Memory & dna )
 {
 }
 
-string Memory::str( void ) const
+string RemyMemory::str( void ) const
 {
   char tmp[ 256 ];
   snprintf( tmp, 256, "sewma: %f rewma: %f rttr: %f", _rec_send_ewma, _rec_rec_ewma, _rtt_ratio );

@@ -51,14 +51,15 @@ TEST	= test
 RM	= rm -f
 MV      = mv
 PERL	= @PERL@
+PROTOC  = protoc
 
 # for diffusion
 #DIFF_INCLUDES = "./diffusion3/main ./diffusion3/lib ./diffusion3/nr ./diffusion3/ns"
 
-CCOPT	= @V_CCOPT@ 
+CCOPT	= @V_CCOPT@
 STATIC	= @V_STATIC@
 #LDFLAGS	= $(STATIC)
-LDFLAGS	= @LDFLAGS@ 
+LDFLAGS	= @LDFLAGS@
 LDOUT	= -o $(BLANK)
 
 DEFINE	= -DTCP_DELAY_BIND_ALL -DNO_TK @V_DEFINE@ @V_DEFINES@ @DEFS@ -DNS_DIFFUSION -DSMAC_NO_SYNC -DCPP_NAMESPACE=@CPP_NAMESPACE@ -DUSE_SINGLE_ADDRESS_SPACE -Drng_test
@@ -74,19 +75,21 @@ INCLUDES = \
 	-I./diffusion3/lib/nr -I./diffusion3/ns \
 	-I./diffusion3/filter_core -I./asim/ -I./qs \
 	-I./diffserv -I./satellite \
-	-I./wpan
-
+	-I./wpan \
+	-I./tcp/unicorn/src \
+	-I./tcp/unicorn/protobufs
 
 LIB	= \
 	@V_LIBS@ \
 	@V_LIB_X11@ \
 	@V_LIB@ \
-	-lm -lprotobuf -pthread @LIBS@
+	-lm -lprotobuf -pthread @LIBS@ \
+	$(shell python3-config --ldflags)
 #	-L@libdir@ \
 
-CFLAGS	+= $(CCOPT) $(DEFINE) 
+CFLAGS	+= $(CCOPT) $(DEFINE)
 #CXXFLAGS += -std=c++0x
-CXXFLAGS += $(CCOPT) $(DEFINE) -std=gnu++0x
+CXXFLAGS += $(CCOPT) $(DEFINE) $(EXTRA_FLAGS) -std=gnu++0x
 
 # Explicitly define compilation rules since SunOS 4's make doesn't like gcc.
 # Also, gcc does not remove the .o before forking 'as', which can be a
@@ -97,12 +100,11 @@ CXXFLAGS += $(CCOPT) $(DEFINE) -std=gnu++0x
 	@rm -f $@
 #	$(CPP) -c $(CFLAGS) $(INCLUDES) -o $@ $*.cc
 #	$(CXX) -c $(CFLAGS) $(INCLUDES) -o $@ $*.cc
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -o $@ $*.cc
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -o $@ $*.cc;
 
 .c.o:
 	@rm -f $@
 	$(CC) -c $(CFLAGS) $(INCLUDES) -o $@ $*.c
-
 
 GEN_DIR	= gen/
 LIB_DIR	= lib/
@@ -112,46 +114,55 @@ NSX	= nsx
 NSE	= nse
 NSTK = nstk
 
+%.pb.h: %.proto
+	$(PROTOC) --cpp_out=. $<
+
 # To allow conf/makefile.win overwrite this macro
 # We will set these two macros to empty in conf/makefile.win since VC6.0
-# does not seem to support the STL in gcc 2.8 and up. 
-OBJ_STL = diffusion3/lib/nr/nr.o diffusion3/lib/dr.o \
-	diffusion3/filters/diffusion/one_phase_pull.o \
-	diffusion3/filters/diffusion/two_phase_pull.o \
-	diffusion3/lib/diffapp.o \
-	diffusion3/ns/diffagent.o diffusion3/ns/diffrtg.o \
-	diffusion3/ns/difftimer.o \
-	diffusion3/filter_core/filter_core.o \
-	diffusion3/filter_core/iolog.o \
-	diffusion3/filter_core/iostats.o \
-	diffusion3/lib/main/attrs.o \
-	diffusion3/lib/main/events.o \
-	diffusion3/lib/main/iodev.o \
-	diffusion3/lib/main/iohook.o \
-	diffusion3/lib/main/timers.o \
-	diffusion3/lib/main/message.o \
-	diffusion3/lib/main/tools.o \
-	diffusion3/apps/gear_examples/gear_common.o \
-	diffusion3/apps/gear_examples/gear_receiver.o \
-	diffusion3/apps/gear_examples/gear_sender.o \
-	diffusion3/apps/rmst_examples/rmst_sink.o \
-	diffusion3/apps/rmst_examples/rmst_source.o \
-	diffusion3/apps/ping/1pp_ping_sender.o \
-	diffusion3/apps/ping/1pp_ping_receiver.o \
-	diffusion3/apps/ping/2pp_ping_sender.o \
-	diffusion3/apps/ping/2pp_ping_receiver.o \
-	diffusion3/apps/ping/ping_common.o \
-	diffusion3/apps/ping/push_receiver.o \
-	diffusion3/apps/ping/push_sender.o \
-	diffusion3/filters/gear/gear_attr.o \
-	diffusion3/filters/gear/gear.o \
-	diffusion3/filters/gear/gear_tools.o \
-	diffusion3/filters/misc/log.o \
-	diffusion3/filters/misc/srcrt.o \
-	diffusion3/filters/misc/tag.o \
-	diffusion3/filters/rmst/rmst.o \
-	diffusion3/filters/rmst/rmst_filter.o \
-	delaybox/delaybox.o \
+# does not seem to support the STL in gcc 2.8 and up.
+#OBJ_STL = #	diffusion3/lib/nr/nr.o diffusion3/lib/dr.o \
+#	diffusion3/filters/diffusion/one_phase_pull.o \
+#	diffusion3/filters/diffusion/two_phase_pull.o \
+#	diffusion3/lib/diffapp.o \
+#	diffusion3/ns/diffagent.o diffusion3/ns/diffrtg.o \
+#	diffusion3/ns/difftimer.o \
+#	diffusion3/filter_core/filter_core.o \
+#	diffusion3/filter_core/iolog.o \
+#	diffusion3/filter_core/iostats.o \
+#	diffusion3/lib/main/attrs.o \
+#	diffusion3/lib/main/events.o \
+#	diffusion3/lib/main/iodev.o \
+#	diffusion3/lib/main/iohook.o \
+#	diffusion3/lib/main/timers.o \
+#	diffusion3/lib/main/message.o \
+#	diffusion3/lib/main/tools.o \
+#	diffusion3/apps/gear_examples/gear_common.o \
+#	diffusion3/apps/gear_examples/gear_receiver.o \
+#	diffusion3/apps/gear_examples/gear_sender.o \
+#	diffusion3/apps/rmst_examples/rmst_sink.o \
+#	diffusion3/apps/rmst_examples/rmst_source.o \
+#	diffusion3/apps/ping/1pp_ping_sender.o \
+#	diffusion3/apps/ping/1pp_ping_receiver.o \
+#	diffusion3/apps/ping/2pp_ping_sender.o \
+#	diffusion3/apps/ping/2pp_ping_receiver.o \
+#	diffusion3/apps/ping/ping_common.o \
+#	diffusion3/apps/ping/push_receiver.o \
+#	diffusion3/apps/ping/push_sender.o \
+#	diffusion3/filters/gear/gear_attr.o \
+#	diffusion3/filters/gear/gear.o \
+#	diffusion3/filters/gear/gear_tools.o \
+#	diffusion3/filters/misc/log.o \
+#	diffusion3/filters/misc/srcrt.o \
+#	diffusion3/filters/misc/tag.o \
+#	diffusion3/filters/rmst/rmst.o \
+#	diffusion3/filters/rmst/rmst_filter.o \
+#	delaybox/delaybox.o \
+#	packmime/packmime_HTTP.o packmime/packmime_HTTP_rng.o \
+#	packmime/packmime_OL.o packmime/packmime_OL_ranvar.o\
+#	packmime/packmime_ranvar.o \
+#	tmix/tmix.o tmix/tmixAgent.o tmix/tmix_delaybox.o
+
+OBJ_STL = delaybox/delaybox.o \
 	packmime/packmime_HTTP.o packmime/packmime_HTTP_rng.o \
 	packmime/packmime_OL.o packmime/packmime_OL_ranvar.o\
 	packmime/packmime_ranvar.o \
@@ -181,7 +192,7 @@ OBJ_CC = \
 	classifier/classifier-mac.o \
 	classifier/classifier-qs.o \
 	classifier/classifier-port.o src_rtg/classifier-sr.o \
-        src_rtg/sragent.o src_rtg/hdr_src.o adc/ump.o \
+				src_rtg/sragent.o src_rtg/hdr_src.o adc/ump.o \
 	qs/qsagent.o qs/hdr_qs.o \
 	apps/app.o apps/telnet.o tcp/tcplib-telnet.o \
 	tools/trafgen.o trace/traffictrace.o tools/pareto.o \
@@ -189,7 +200,7 @@ OBJ_CC = \
 	adc/tbf.o adc/resv.o adc/sa.o tcp/saack.o \
 	tools/measuremod.o adc/estimator.o adc/adc.o adc/ms-adc.o \
 	adc/timewindow-est.o adc/acto-adc.o \
-        adc/pointsample-est.o adc/salink.o adc/actp-adc.o \
+				adc/pointsample-est.o adc/salink.o adc/actp-adc.o \
 	adc/hb-adc.o adc/expavg-est.o\
 	adc/param-adc.o adc/null-estimator.o \
 	adc/adaptive-receiver.o apps/vatrcvr.o adc/consrcvr.o \
@@ -198,7 +209,7 @@ OBJ_CC = \
 	common/ivs.o \
 	common/messpass.o common/tp.o common/tpm.o apps/worm.o \
 	tcp/tcp.o tcp/tcp-sink.o tcp/tcp-reno.o \
-	tcp/tcp-newreno.o tcp/tcp-rational.o tcp/tcp-fast.o \
+	tcp/tcp-newreno.o tcp/tcp-rational.o tcp/tcp-unicorn.o tcp/tcp-fast.o \
 	tcp/remy/dna.pb.o tcp/remy/memory.o tcp/remy/memoryrange.o tcp/remy/whisker.o tcp/remy/whiskertree.o \
 	tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o \
 	baytcp/tcp-full-bay.o baytcp/ftpc.o baytcp/ftps.o \
@@ -214,20 +225,20 @@ OBJ_CC = \
 	sctp/sctp-mfrTimestamp.o \
 	sctp/sctp-cmt.o \
 	sctp/sctpDebug.o \
-        dccp/dccp_sb.o \
-        dccp/dccp_opt.o \
-        dccp/dccp_ackv.o \
-        dccp/dccp_packets.o \
-        dccp/dccp.o \
-        dccp/dccp_tcplike.o \
-        dccp/dccp_tfrc.o \
+				dccp/dccp_sb.o \
+				dccp/dccp_opt.o \
+				dccp/dccp_ackv.o \
+				dccp/dccp_packets.o \
+				dccp/dccp.o \
+				dccp/dccp_tcplike.o \
+				dccp/dccp_tfrc.o \
 	tools/integrator.o tools/queue-monitor.o \
 	tools/flowmon.o tools/loss-monitor.o \
 	queue/queue.o queue/drop-tail.o \
 	adc/simple-intserv-sched.o queue/red.o queue/codel.o queue/sfqcodel.o \
-        queue/sfd.o queue/flow-stats.o queue/cell-link.o \
-        queue/sfd-rate-estimator.o queue/sfd-scheduler.o queue/sfd-dropper.o \
-        link/poisson-link.o link/brownian-link.o link/trace-link.o \
+	queue/sfd.o queue/flow-stats.o queue/cell-link.o \
+	queue/sfd-rate-estimator.o queue/sfd-scheduler.o queue/sfd-dropper.o \
+	link/poisson-link.o link/brownian-link.o link/trace-link.o \
 	queue/semantic-packetqueue.o queue/semantic-red.o \
 	tcp/ack-recons.o \
 	queue/sfq.o queue/fq.o queue/drr.o queue/srr.o queue/cbq.o \
@@ -308,14 +319,14 @@ OBJ_CC = \
 	mpls/classifier-addr-mpls.o mpls/ldp.o mpls/mpls-module.o \
 	routing/rtmodule.o classifier/classifier-hier.o \
 	routing/addr-params.o \
-         nix/hdr_nv.o nix/classifier-nix.o \
-         nix/nixnode.o \
-         routealgo/rnode.o \
-         routealgo/bfs.o \
-         routealgo/rbitmap.o \
-         routealgo/rlookup.o \
-         routealgo/routealgo.o \
-         nix/nixvec.o \
+				 nix/hdr_nv.o nix/classifier-nix.o \
+				 nix/nixnode.o \
+				 routealgo/rnode.o \
+				 routealgo/bfs.o \
+				 routealgo/rbitmap.o \
+				 routealgo/rlookup.o \
+				 routealgo/routealgo.o \
+				 nix/nixvec.o \
 	nix/nixroute.o \
 	diffserv/dsred.o diffserv/dsredq.o \
 	diffserv/dsEdge.o diffserv/dsCore.o \
@@ -343,8 +354,12 @@ OBJ_CC = \
 	wpan/p802_15_4sscs.o wpan/p802_15_4timer.o \
 	wpan/p802_15_4trace.o wpan/p802_15_4transac.o \
 	apps/pbc.o \
+	tcp/unicorn/src/memory.o \
+	tcp/unicorn/src/rainbow.o \
+	tcp/unicorn/src/unicorn.o \
 	@V_STLOBJ@
 
+tcp/tcp-unicorn.o	tcp/unicorn/src/rainbow.o	tcp/unicorn/src/unicorn.o: EXTRA_FLAGS := $(shell python3-config --cflags | sed 's/\-Wstrict\-prototypes//' | sed 's/\-DNDEBUG//')
 
 # don't allow comments to follow continuation lines
 
@@ -367,35 +382,38 @@ OBJ_COMPAT = $(OBJ_GETOPT) common/win32.o
 #XXX compat/win32x.o compat/tkConsole.o
 
 OBJ_EMULATE_CC = \
-	emulate/net-ip.o \
-	emulate/net.o \
-	emulate/tap.o \
-	emulate/ether.o \
-	emulate/internet.o \
-	emulate/ping_responder.o \
-	emulate/arp.o \
-	emulate/icmp.o \
-	emulate/net-pcap.o \
-	emulate/nat.o  \
-	emulate/iptap.o \
-	emulate/tcptap.o
+#	emulate/net-ip.o \
+#	emulate/net.o \
+#	emulate/tap.o \
+#	emulate/ether.o \
+#	emulate/internet.o \
+#	emulate/ping_responder.o \
+#	emulate/arp.o \
+#	emulate/icmp.o \
+#	emulate/net-pcap.o \
+#	emulate/nat.o  \
+#	emulate/iptap.o \
+#	emulate/tcptap.o
 
 OBJ_EMULATE_C = \
-	emulate/inet.o
+#	emulate/inet.o
 
 OBJ_GEN = $(GEN_DIR)version.o $(GEN_DIR)ns_tcl.o $(GEN_DIR)ptypes.o
 
 SRC =	$(OBJ_C:.o=.c) $(OBJ_CC:.o=.cc) \
 	$(OBJ_EMULATE_C:.o=.c) $(OBJ_EMULATE_CC:.o=.cc) \
-	common/tclAppInit.cc common/tkAppInit.cc 
+	common/tclAppInit.cc common/tkAppInit.cc
 
 OBJ =	$(OBJ_C) $(OBJ_CC) $(OBJ_GEN) $(OBJ_COMPAT)
+
+-DEP1 = $(SRC:.c=.P)
+-DEP = $(DEP1:.cc=.P)
 
 CLEANFILES = ns nse nsx ns.dyn $(OBJ) $(OBJ_EMULATE_CC) \
 	$(OBJ_EMULATE_C) common/tclAppInit.o common/main-monolithic.o \
 	common/tkAppInit.o nstk \
 	$(GEN_DIR)* $(NS).core core core.$(NS) core.$(NSX) core.$(NSE) \
-	common/ptypes2tcl common/ptypes2tcl.o 
+	common/ptypes2tcl common/ptypes2tcl.o
 
 SUBDIRS=\
 	indep-utils/cmu-scen-gen/setdest \
@@ -406,7 +424,7 @@ SUBDIRS=\
 
 BUILD_NSE = @build_nse@
 
-all: $(NS) $(BUILD_NSE) $(NSTK) all-recursive Makefile
+all: tcp/remy/dna.pb.h $(NS) $(BUILD_NSE) $(NSTK) all-recursive Makefile
 
 
 all-recursive:
@@ -416,29 +434,29 @@ ifeq ($(NSLIB),libns.dll)
 
 # This is for cygwin
 
-NS_CPPFLAGS = -DNSLIBNAME=\"$(NSLIB)\" 
+NS_CPPFLAGS = -DNSLIBNAME=\"$(NSLIB)\"
 NS_LIBS =  @DL_LIBS@
 
-$(NSLIB): $(OBJ) common/tclAppInit.o 
+$(NSLIB): $(OBJ) common/tclAppInit.o
 	$(LINK) -shared $(LDFLAGS) \
 		$(LDOUT)$@  \
 		-Wl,--export-all-symbols \
 		-Wl,--enable-auto-import \
 		-Wl,--out-implib=$@.a \
 		-Wl,--whole-archive $^ \
-		-Wl,--no-whole-archive @V_IMPORT_LIBS@ 
+		-Wl,--no-whole-archive @V_IMPORT_LIBS@
 
-$(NS): $(NSLIB) common/main-modular.cc 
+$(NS): $(NSLIB) common/main-modular.cc
 	$(LINK) $(NS_CPPFLAGS) $(LDFLAGS) $(LDOUT)$@ common/main-modular.cc $(NS_LIBS)
 
-else 
+else
 
 # default for all systems but cygwin
 
 $(NS): $(OBJ) common/tclAppInit.o common/main-monolithic.o
 	$(LINK) $(LDFLAGS) $(LDOUT)$@ $^ $(LIB)
 
-endif 
+endif
 
 
 
@@ -448,16 +466,16 @@ Makefile: Makefile.in
 	false
 
 $(NSE): $(OBJ) common/tclAppInit.o common/main-monolithic.o $(OBJ_EMULATE_CC) $(OBJ_EMULATE_C)
-	$(LINK) $(LDFLAGS) $(LDOUT)$@ $^ $(LIB) 
-
-$(NSTK): $(OBJ) common/tkAppInit.o 
 	$(LINK) $(LDFLAGS) $(LDOUT)$@ $^ $(LIB)
 
-ns.dyn: $(OBJ) common/tclAppInit.o common/main-monolithic.o 
+$(NSTK): $(OBJ) common/tkAppInit.o
+	$(LINK) $(LDFLAGS) $(LDOUT)$@ $^ $(LIB)
+
+ns.dyn: $(OBJ) common/tclAppInit.o common/main-monolithic.o
 	$(LINK) $(LDFLAGS) -o $@ $^ $(LIB)
 
 PURIFY	= purify -cache-dir=/tmp
-ns-pure: $(OBJ) common/tclAppInit.o common/main-monolithic.o 
+ns-pure: $(OBJ) common/tclAppInit.o common/main-monolithic.o
 	$(PURIFY) $(LINK) $(LDFLAGS) -o $@ $^ $(LIB)
 
 NS_TCL_LIB = \
@@ -489,11 +507,11 @@ NS_TCL_LIB = \
 	tcl/rtglib/route-proto.tcl \
 	tcl/rtglib/algo-route-proto.tcl \
 	tcl/rtglib/ns-rtProtoLS.tcl \
-        tcl/interface/ns-iface.tcl \
+				tcl/interface/ns-iface.tcl \
 	tcl/mcast/BST.tcl \
-        tcl/mcast/ns-mcast.tcl \
-        tcl/mcast/McastProto.tcl \
-        tcl/mcast/DM.tcl \
+				tcl/mcast/ns-mcast.tcl \
+				tcl/mcast/McastProto.tcl \
+				tcl/mcast/DM.tcl \
 	tcl/mcast/srm.tcl \
 	tcl/mcast/srm-adaptive.tcl \
 	tcl/mcast/srm-ssm.tcl \
@@ -501,9 +519,9 @@ NS_TCL_LIB = \
 	tcl/mcast/McastMonitor.tcl \
 	tcl/mobility/dsdv.tcl \
 	tcl/mobility/dsr.tcl \
-        tcl/ctr-mcast/CtrMcast.tcl \
-        tcl/ctr-mcast/CtrMcastComp.tcl \
-        tcl/ctr-mcast/CtrRPComp.tcl \
+				tcl/ctr-mcast/CtrMcast.tcl \
+				tcl/ctr-mcast/CtrMcastComp.tcl \
+				tcl/ctr-mcast/CtrRPComp.tcl \
 	tcl/rlm/rlm.tcl \
 	tcl/rlm/rlm-ns.tcl \
 	tcl/session/session.tcl \
@@ -576,7 +594,7 @@ clean-recursive:
 AUTOCONF_GEN = tcl/lib/ns-autoconf.tcl
 distclean: distclean-recursive
 	$(RM) $(CLEANFILES) Makefile config.cache config.log config.status \
-	    autoconf.h gnuc.h os-proto.h $(AUTOCONF_GEN); \
+			autoconf.h gnuc.h os-proto.h $(AUTOCONF_GEN); \
 	$(MV) .configure .configure- ;\
 	echo "Moved .configure to .configure-"
 
@@ -586,7 +604,7 @@ distclean-recursive:
 tags:	force
 	ctags -wtd *.cc *.h webcache/*.cc webcache/*.h dsdv/*.cc dsdv/*.h \
 	dsr/*.cc dsr/*.h webcache/*.cc webcache/*.h lib/*.cc lib/*.h \
-	../Tcl/*.cc ../Tcl/*.h 
+	../Tcl/*.cc ../Tcl/*.h
 
 TAGS:	force
 	etags *.cc *.h webcache/*.cc webcache/*.h dsdv/*.cc dsdv/*.h \
@@ -606,19 +624,19 @@ depend: $(SRC)
 
 srctar:
 	@cwd=`pwd` ; dir=`basename $$cwd` ; \
-	    name=ns-`cat VERSION | tr A-Z a-z` ; \
-	    tar=ns-src-`cat VERSION`.tar.gz ; \
-	    list="" ; \
-	    for i in `cat FILES` ; do list="$$list $$name/$$i" ; done; \
-	    echo \
-	    "(rm -f $$tar; cd .. ; ln -s $$dir $$name)" ; \
-	     (rm -f $$tar; cd .. ; ln -s $$dir $$name) ; \
-	    echo \
-	    "(cd .. ; tar cfhz $$tar [lots of files])" ; \
-	     (cd .. ; tar cfhz - $$list) > $$tar ; \
-	    echo \
-	    "rm ../$$name; chmod 444 $$tar" ;  \
-	     rm ../$$name; chmod 444 $$tar
+			name=ns-`cat VERSION | tr A-Z a-z` ; \
+			tar=ns-src-`cat VERSION`.tar.gz ; \
+			list="" ; \
+			for i in `cat FILES` ; do list="$$list $$name/$$i" ; done; \
+			echo \
+			"(rm -f $$tar; cd .. ; ln -s $$dir $$name)" ; \
+			 (rm -f $$tar; cd .. ; ln -s $$dir $$name) ; \
+			echo \
+			"(cd .. ; tar cfhz $$tar [lots of files])" ; \
+			 (cd .. ; tar cfhz - $$list) > $$tar ; \
+			echo \
+			"rm ../$$name; chmod 444 $$tar" ;  \
+			 rm ../$$name; chmod 444 $$tar
 
 force:
 
