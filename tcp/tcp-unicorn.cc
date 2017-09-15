@@ -52,32 +52,18 @@ UnicornTcpAgent::UnicornTcpAgent()
 	// _unicorn = new Unicorn(false);
 }
 
-// UnicornTcpAgent::~UnicornTcpAgent()
-// {
-// 	// if ( _whiskers ) {
-// 	// 	delete _whiskers;
-// 	// }
-// 	if (_unicorn) {
-// 		delete _unicorn;
-// 	}
-// }
+UnicornTcpAgent::~UnicornTcpAgent() {}
 
-// void
-// UnicornTcpAgent::delay_bind_init_all()
-// {
-// 	TcpAgent::delay_bind_init_all();
-//         reset();
-// }
+void
+UnicornTcpAgent::delay_bind_init_all() {
+	TcpAgent::delay_bind_init_all();
+  TcpAgent::reset();
+}
 
-// int
-// UnicornTcpAgent::delay_bind_dispatch(const char *varName, const char *localName,
-// 				   TclObject *tracer)
-// {
-// 	if (delay_bind(varName, localName, "tracewhisk_", &tracewhisk_, tracer))  {
-// 		return TCL_OK;
-// 	}
-//   return TcpAgent::delay_bind_dispatch(varName, localName, tracer);
-// }
+int
+UnicornTcpAgent::delay_bind_dispatch(const char *varName, const char *localName, TclObject *tracer) {
+  return TcpAgent::delay_bind_dispatch(varName, localName, tracer);
+}
 
 
 static class UnicornTcpClass : public TclClass {
@@ -270,7 +256,7 @@ UnicornTcpAgent::update_cwnd_and_pacing( void )
 
 	cwnd_ = _the_window;
 	// _intersend_time = .001 * current_whisker.intersend();
-	// if (tracewhisk_) {
+	// if (trace_) {
 	// 	fprintf( stderr, "memory: %s falls into whisker %s\n", _memory.str().c_str(), current_whisker.str().c_str() );
 	// 	fprintf( stderr, "\t=> cwnd now %u, intersend_time now %f\n", new_cwnd, _intersend_time );
 	// }

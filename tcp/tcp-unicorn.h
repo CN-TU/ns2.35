@@ -17,7 +17,7 @@
 #include "unicorn/src/unicorn.hh"
 
 /* Unicorn TCP with Tahoe */
-class UnicornTcpAgent : public virtual TcpAgent, public virtual Unicorn {
+class UnicornTcpAgent : public virtual TcpAgent, public Unicorn {
 public:
 	UnicornTcpAgent();
 	~UnicornTcpAgent();
@@ -32,11 +32,9 @@ public:
 	virtual void output( int seqno, int reason );
 	virtual void update_cwnd_and_pacing( void );
 
-// protected:
-	// virtual void delay_bind_init_all();
-	// virtual int delay_bind_dispatch(const char *varName, const char *localName, TclObject *tracer);
-	// int tracewhisk_;	// trace whiskers?
-	// double _last_send_time;
+protected:
+	virtual void delay_bind_init_all();
+	virtual int delay_bind_dispatch(const char *varName, const char *localName, TclObject *tracer);
 	int count_bytes_acked_;
 };
 
