@@ -47,12 +47,12 @@ public:
 	UnicornRenoTcpAgent() : RenoTcpAgent(), UnicornTcpAgent() {}
 
 	/* helper functions */
-	virtual void send_helper(int maxburst) {UnicornTcpAgent::send_helper(maxburst);}
+	virtual void send_helper(int maxburst) {UnicornTcpAgent:: send_helper(maxburst);}
 	virtual void send_idle_helper() {UnicornTcpAgent::send_idle_helper();}
 	virtual void recv_newack_helper(Packet* pkt) {UnicornTcpAgent::recv_newack_helper(pkt);}
 	virtual double initial_window() {return UnicornTcpAgent::initial_window();}
 	virtual void update_memory( const remy::Packet packet ) {UnicornTcpAgent::update_memory(packet);}
-	virtual void output( int seqno, int reason );
+	virtual void output( int seqno, int reason )  {UnicornTcpAgent::output( seqno, reason );}
 };
 
 /*
@@ -68,7 +68,7 @@ public:
 	virtual void recv_newack_helper(Packet* pkt) {UnicornTcpAgent::recv_newack_helper(pkt);}
 	virtual double initial_window() {return UnicornTcpAgent::initial_window();}
 	virtual void update_memory( const remy::Packet packet ) {UnicornTcpAgent::update_memory(packet);}
-	virtual void output( int seqno, int reason );
+	virtual void output( int seqno, int reason )  {UnicornTcpAgent::output( seqno, reason );}
 };
 
 #endif

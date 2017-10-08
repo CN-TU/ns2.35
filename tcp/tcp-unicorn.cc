@@ -11,10 +11,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
+#include <iostream>
 
 #include "tcp-unicorn.h"
 
-UnicornTcpAgent::UnicornTcpAgent()
+// FIXME: Don't hardcode cooperative and delay delta
+UnicornTcpAgent::UnicornTcpAgent() : Unicorn(true, 0.5)
 {
 	bind_bool("count_bytes_acked_", &count_bytes_acked_);
 	_training = false;
@@ -57,7 +59,9 @@ UnicornTcpAgent::~UnicornTcpAgent() {}
 void
 UnicornTcpAgent::delay_bind_init_all() {
 	TcpAgent::delay_bind_init_all();
-  TcpAgent::reset();
+	TcpAgent::reset();
+	const double tickno = Scheduler::instance().clock();
+	Unicorn::reset(tickno);
 }
 
 int
@@ -131,6 +135,7 @@ void UnicornTcpAgent::output( int seqno, int reason ) {
 	const double tickno = Scheduler::instance().clock();
 	remy::Packet p( 0, 0, tickno, seqno );
 	_id_to_sent_during_action[seqno] = _put_actions;
+	_id_to_sent_during_flow[seqno] = _flow_id;
 	_outstanding_rewards[_put_actions]["sent"] += 1;
 	if (_last_send_time != 0) {
 		_outstanding_rewards[_put_actions]["intersend_duration_acc"] += tickno - _last_send_time;
@@ -140,36 +145,6 @@ void UnicornTcpAgent::output( int seqno, int reason ) {
 	_last_send_time = tickno;
 
 	TcpAgent::output( seqno, reason );
-}
-
-void UnicornRenoTcpAgent::output( int seqno, int reason ) {
-	const double tickno = Scheduler::instance().clock();
-	remy::Packet p( 0, 0, tickno, seqno );
-	_id_to_sent_during_action[seqno] = _put_actions;
-	_outstanding_rewards[_put_actions]["sent"] += 1;
-	if (_last_send_time != 0) {
-		_outstanding_rewards[_put_actions]["intersend_duration_acc"] += tickno - _last_send_time;
-	}
-	_packets_sent++;
-	_memory.packet_sent( p );
-	_last_send_time = tickno;
-
-	RenoTcpAgent::output( seqno, reason );
-}
-
-void UnicornNewRenoTcpAgent::output( int seqno, int reason ) {
-	const double tickno = Scheduler::instance().clock();
-	remy::Packet p( 0, 0, tickno, seqno );
-	_id_to_sent_during_action[seqno] = _put_actions;
-	_outstanding_rewards[_put_actions]["sent"] += 1;
-	if (_last_send_time != 0) {
-		_outstanding_rewards[_put_actions]["intersend_duration_acc"] += tickno - _last_send_time;
-	}
-	_packets_sent++;
-	_memory.packet_sent( p );
-	_last_send_time = tickno;
-
-	NewRenoTcpAgent::output( seqno, reason );
 }
 
 /*
@@ -254,7 +229,9 @@ UnicornTcpAgent::update_cwnd_and_pacing( void )
 	// 	new_cwnd = 1024;
 	// }
 
-	cwnd_ = _the_window;
+	// printf("%lu: before update in tcp-unicorn: cwnd_=%f, _the_window=%f\n", _thread_id, (double) cwnd_, _the_window);
+	cwnd_ = Unicorn::_the_window;
+	printf("%lu: cwnd_=%f\n", _thread_id, (double) cwnd_);
 	// _intersend_time = .001 * current_whisker.intersend();
 	// if (trace_) {
 	// 	fprintf( stderr, "memory: %s falls into whisker %s\n", _memory.str().c_str(), current_whisker.str().c_str() );

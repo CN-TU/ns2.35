@@ -97,13 +97,13 @@ CXXFLAGS += $(CCOPT) $(DEFINE) $(EXTRA_FLAGS) -std=gnu++0x
 .SUFFIXES: .cc	# $(.SUFFIXES)
 
 .cc.o:
-	@rm -f $@
+#	@rm -f $@
 #	$(CPP) -c $(CFLAGS) $(INCLUDES) -o $@ $*.cc
 #	$(CXX) -c $(CFLAGS) $(INCLUDES) -o $@ $*.cc
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -o $@ $*.cc;
 
 .c.o:
-	@rm -f $@
+#	@rm -f $@
 	$(CC) -c $(CFLAGS) $(INCLUDES) -o $@ $*.c
 
 GEN_DIR	= gen/
