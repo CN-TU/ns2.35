@@ -17,10 +17,10 @@ set protosinks [list TCPSink TCPSink TCPSink TCPSink]
 
 # topology parameters
 set opt(gw) DropTail;           # queueing at bottleneck
-set opt(bneck) 15Mb;             # bottleneck bandwidth (for some topos)
-set opt(maxq) 1000;             # max queue length at bottleneck
+set opt(bneck) 3Mb;             # bottleneck bandwidth (for some topos)
+set opt(maxq) 30;             # max queue length at bottleneck
 set opt(rcvwin) 65536
-set opt(delay) 74ms;            # total one-way delay in topology
+set opt(delay) 50;            # total one-way delay in topology
 set opt(link) None
 
 # app parameters
@@ -32,7 +32,7 @@ set opt(seed) 0
 set opt(onrand) Exponential
 set opt(offrand) Exponential
 set opt(onavg) 5.0;              # mean on and off time
-set opt(offavg) 0.5;              # mean on and off time
+set opt(offavg) 0.0;              # mean on and off time
 set opt(avgbytes) 100000;          # 16 KBytes flows on avg (too low?)
 set opt(ontype) "bytes";           # valid options are "bytes" and "flowcdf"
 set opt(reset) "false";             # reset TCP on end of ON period
