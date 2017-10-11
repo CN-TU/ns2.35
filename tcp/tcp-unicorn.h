@@ -47,7 +47,7 @@ public:
 	UnicornRenoTcpAgent() : RenoTcpAgent(), UnicornTcpAgent() {}
 
 	/* helper functions */
-	virtual void send_helper(int maxburst) {UnicornTcpAgent:: send_helper(maxburst);}
+	virtual void send_helper(int maxburst) {UnicornTcpAgent::send_helper(maxburst);}
 	virtual void send_idle_helper() {UnicornTcpAgent::send_idle_helper();}
 	virtual void recv_newack_helper(Packet* pkt) {UnicornTcpAgent::recv_newack_helper(pkt);}
 	virtual double initial_window() {return UnicornTcpAgent::initial_window();}

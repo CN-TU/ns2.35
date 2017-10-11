@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import os
 import sys
 from optparse import OptionParser
@@ -25,22 +26,22 @@ def runonce(fullname, proto, w, gateway, nsrc, type, simtime, on, off, outfname)
     if type == "bytes":
         runstr = './remy2.tcl %s -tcp %s -sink %s -gw %s -ontype %s -onrand %s -avgbytes %d -offrand %s -offavg %s -nsrc %d -simtime %d' % (conffile, proto, sink, gw, type, w, on, w, off, nsrc, simtime)
     elif type == "time":
-        runstr = './remy2.tcl %s -tcp %s -sink %s -gw %s -ontype %s -onrand %s -onavg %d -offrand %s -offavg %s -nsrc %d -simtime %d' % (conffile, proto, sink, gw, type, w, on, w, off, nsrc, simtime)                
+        runstr = './remy2.tcl %s -tcp %s -sink %s -gw %s -ontype %s -onrand %s -onavg %d -offrand %s -offavg %s -nsrc %d -simtime %d' % (conffile, proto, sink, gw, type, w, on, w, off, nsrc, simtime)
     else:
-        runstr = './remy2.tcl %s -tcp %s -sink %s -gw %s -ontype %s -offrand %s -offavg %s -nsrc %d -simtime %d' % (conffile, proto, sink, gw, type, w, off, nsrc, simtime)                
-        
+        runstr = './remy2.tcl %s -tcp %s -sink %s -gw %s -ontype %s -offrand %s -offavg %s -nsrc %d -simtime %d' % (conffile, proto, sink, gw, type, w, off, nsrc, simtime)
+
 
     print runstr
-    fnull = open(os.devnull, "w") 
+    fnull = open(os.devnull, "w")
     fout = open(outfname, "ab")
-    output = subprocess.call(runstr, stdout=fout, stderr=fnull, shell=True)    
+    output = subprocess.call(runstr, stdout=fout, stderr=fnull, shell=True)
     return
 
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option("-c", "--conffile", type="string", dest="remyconf", 
-                      default = "", help = "Remy config file (Tcl)") 
-    parser.add_option("-d", "--dirresults", type="string", dest="resdir", 
+    parser.add_option("-c", "--conffile", type="string", dest="remyconf",
+                      default = "", help = "Remy config file (Tcl)")
+    parser.add_option("-d", "--dirresults", type="string", dest="resdir",
                       default = "./tmpres", help = "directory for results")
     parser.add_option("-p", "--proto", type="string", dest="proto",
                       default = "TCP/Newreno", help = "protocol")
@@ -76,10 +77,10 @@ if __name__ == '__main__':
                 while numsrcs <= config.nsrc:
                     for i in xrange(iterations):
                         if config.ontype == "bytes":
-                            outfname = '%s/%s.%s.nconn%d.%son%d.off%d.simtime%d' % (config.resdir, fullname.replace('/','-'), wrk, numsrcs, config.ontype, avgbytes, onoff, simtime)
+                            outfname = '%s/%s.%s.nconn%d.%son%d.off%f.simtime%d' % (config.resdir, fullname.replace('/','-'), wrk, numsrcs, config.ontype, avgbytes, onoff, simtime)
                             runonce(fullname, proto, wrk, 'DropTail', numsrcs, config.ontype, simtime, avgbytes, onoff, outfname)
                         else:
-                            outfname = '%s/%s.%s.nconn%d.%son%d.off%d.simtime%d' % (config.resdir, fullname.replace('/','-'), wrk, numsrcs, config.ontype, onoff, onoff, simtime)
+                            outfname = '%s/%s.%s.nconn%d.%son%d.off%f.simtime%d' % (config.resdir, fullname.replace('/','-'), wrk, numsrcs, config.ontype, onoff, onoff, simtime)
                             runonce(fullname, proto, wrk, 'DropTail', numsrcs, config.ontype, simtime, onoff, onoff, outfname)
                         print outfname
                     numsrcs = 2*numsrcs
