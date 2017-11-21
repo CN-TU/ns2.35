@@ -84,12 +84,12 @@ LIB	= \
 	@V_LIB_X11@ \
 	@V_LIB@ \
 	-lm -lprotobuf -pthread @LIBS@ \
-	$(shell python3-config --ldflags)
+	$(shell python3.5-config --ldflags)
 #	-L@libdir@ \
 
-CFLAGS	+= $(CCOPT) $(DEFINE)
+CFLAGS	+= $(CCOPT) $(DEFINE)# -fPIC
 #CXXFLAGS += -std=c++0x
-CXXFLAGS += $(CCOPT) $(DEFINE) $(EXTRA_FLAGS) -std=gnu++0x
+CXXFLAGS += $(CCOPT) $(DEFINE) $(EXTRA_FLAGS) -std=gnu++0x -fPIC
 
 # Explicitly define compilation rules since SunOS 4's make doesn't like gcc.
 # Also, gcc does not remove the .o before forking 'as', which can be a
@@ -114,6 +114,7 @@ NSX	= nsx
 NSE	= nse
 NSTK = nstk
 
+# Protobufs for Remy
 %.pb.h: %.proto
 	$(PROTOC) --cpp_out=. $<
 

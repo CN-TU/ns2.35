@@ -176,7 +176,7 @@ UnicornTcpAgent::slowdown(int how)
 		// after quiescent periods.
                 cwnd_ = decreasewin;
 								if (cwnd_ < 1) {
-												// puts("cwnd_ 2");
+												puts("cwnd_ 2");
 												cwnd_ = initial_window();
 								}
 	}
@@ -192,14 +192,14 @@ UnicornTcpAgent::slowdown(int how)
 		// cwnd_ = win - (win - W_used)/2 ;
 		cwnd_ = W_used + decrease_num_ * (win - W_used);
                 if (cwnd_ < 1) {
-												// puts("cwnd_ 4");
+												puts("cwnd_ 4");
 												cwnd_ = initial_window();
 								}
 	}
 	if (ssthresh_ < 2)
 		ssthresh_ = 2;
 	if (cwnd_ < 1) {
-		// puts("cwnd_ 5");
+		puts("cwnd_ 5");
 		cwnd_ = initial_window();
 	}
 		if (how & (CLOSE_CWND_HALF|CLOSE_CWND_RESTART|CLOSE_CWND_INIT|CLOSE_CWND_ONE|CLOSE_CWND_DCTCP))
@@ -219,11 +219,11 @@ UnicornTcpAgent::slowdown(int how)
 // void
 // UnicornTcpAgent::set_initial_window()
 // {
-// 	printf("%lu: In set initial window\n", _thread_id);
+// 	// printf("%lu: In set initial window\n", _thread_id);
 // 	if (syn_ && delay_growth_) {
 // 		syn_connects_ = 0;
 // 	}
-// 	// puts("cwnd_ in set_initial_window");
+// 	puts("cwnd_ in 1");
 // 	cwnd_ = initial_window();
 // }
 
@@ -267,16 +267,23 @@ UnicornTcpAgent::send_helper(int maxburst)
 
 void UnicornTcpAgent::output( int seqno, int reason ) {
 	const double tickno = Scheduler::instance().clock() * 1000;
+
 	remy::Packet p( 0, 0, tickno, seqno );
-	_id_to_sent_during_action[seqno] = _put_actions;
-	_id_to_sent_during_flow[seqno] = _flow_id;
-	_outstanding_rewards[_put_actions]["sent"] += 1;
-	if (_last_send_time != 0) {
-		_outstanding_rewards[_put_actions]["intersend_duration_acc"] += tickno - _last_send_time;
+	_id_to_sent_during_flow[_packets_sent] = _flow_id;
+
+	if (_last_send_time == 0) {
+		_memory._last_tick_sent = tickno;
+		_memory._last_tick_received = tickno;
+		_flow_to_last_received[_flow_id] = tickno;
 	}
+
+	_last_send_time = tickno;
+	_id_to_sent_during_action[_packets_sent] = _put_actions;
+	_outstanding_rewards[_put_actions]["sent"] += 1;
+	_outstanding_rewards[_put_actions]["intersend_duration_acc"] += tickno - _last_send_time;
 	_packets_sent++;
+
 	_memory.packet_sent( p );
-	Unicorn::_last_send_time = tickno;
 
 	TcpAgent::output( seqno, reason );
 }

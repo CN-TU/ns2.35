@@ -9,23 +9,30 @@ my $dir = getcwd;
 my $whiskerdir = $dir . q{/../../../tcp/remy/rats/new/};
 
 for my $nsrc ( 8 ) { # maximum degree of multiplexing
-    # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Unicorn -n $nsrc &};
-    # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Newreno -n $nsrc &};
-    # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Linux/cubic -n $nsrc &};
-    # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Linux/compound -n $nsrc &};
+    system qq{python runremy.py -c remyconf/dumbbell-buf100-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Newreno -n $nsrc &};
+    system qq{python runremy.py -c remyconf/dumbbell-buf100-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Linux/cubic -n $nsrc &};
+    system qq{python runremy.py -c remyconf/dumbbell-buf100-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Linux/compound -n $nsrc &};
     # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Vegas -n $nsrc &};
 
     # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell  -p TCP/Reno/XCP -n $nsrc &};
     # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell  -p Cubic/sfqCoDel -n $nsrc &};
 
-    # $ENV{ WHISKERS } = $whiskerdir . q{delta0.1.dna};
-    # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-rational-delta0.1 -p TCP/Rational -n $nsrc &};
+    $ENV{'WHISKERS'} = $whiskerdir . q{delta0.1.dna};
+    system qq{python runremy.py -c remyconf/dumbbell-buf100-rtt150-bneck15.tcl -d results/Dumbbell-rational-delta0.1 -p TCP/Rational -n $nsrc &};
 
-    # $ENV{'WHISKERS'} = $whiskerdir . q{delta1.dna};
-    # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-rational-delta1 -p TCP/Rational -n $nsrc &};
+    $ENV{'WHISKERS'} = $whiskerdir . q{delta1.dna};
+    system qq{python runremy.py -c remyconf/dumbbell-buf100-rtt150-bneck15.tcl -d results/Dumbbell-rational-delta1 -p TCP/Rational -n $nsrc &};
 
-    # $ENV{'WHISKERS'} = $whiskerdir . q{delta10.dna};
-    # system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-rational-delta10 -p TCP/Rational -n $nsrc &};
+    $ENV{'WHISKERS'} = $whiskerdir . q{delta10.dna};
+    system qq{python runremy.py -c remyconf/dumbbell-buf100-rtt150-bneck15.tcl -d results/Dumbbell-rational-delta10 -p TCP/Rational -n $nsrc &};
 
-    system qq{python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell -p TCP/Unicorn -n $nsrc &};
+    system qq{layers=2 checkpoints=stored_checkpoints/32_2_20.11.12_7 python runremy.py -c remyconf/dumbbell-buf100-rtt150-bneck15.tcl -d results/Dumbbell-2_32_0 -p TCP/Unicorn -n $nsrc &};
+    # system qq{layers=1 checkpoints=stored_checkpoints/0.25_16_1_separated_09.11.17_2 python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-0.25_1_16_2 -p TCP/Unicorn -n $nsrc &};
+    # system qq{layers=1 checkpoints=stored_checkpoints/0.1_16_1_separated_09.11.17_1 python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-0.1_1_16_1 -p TCP/Unicorn -n $nsrc &};
+    # system qq{layers=1 checkpoints=stored_checkpoints/0.1_16_1_separated_09.11.17_2 python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-0.1_1_16_2 -p TCP/Unicorn -n $nsrc &};
+
+    # # system qq{layers=2 checkpoints=stored_checkpoints/0.25_16_2_separated_09.11.17_1 python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-0.25_16_1 -p TCP/Unicorn -n $nsrc &};
+    # # system qq{layers=2 checkpoints=stored_checkpoints/0.25_16_2_separated_09.11.17_2 python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-0.25_16_2 -p TCP/Unicorn -n $nsrc &};
+    # system qq{layers=2 checkpoints=stored_checkpoints/0.1_16_2_separated_09.11.17_1 python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-0.1_2_16_1 -p TCP/Unicorn -n $nsrc &};
+    # system qq{layers=2 checkpoints=stored_checkpoints/0.1_16_2_separated_09.11.17_2 python runremy.py -c remyconf/dumbbell-buf1000-rtt150-bneck15.tcl -d results/Dumbbell-0.1_2_16_2 -p TCP/Unicorn -n $nsrc &};
 }
