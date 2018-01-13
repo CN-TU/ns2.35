@@ -1257,7 +1257,7 @@ void TcpAgent::opencwnd()
 void
 TcpAgent::slowdown(int how)
 {
-	puts("Calling freaking slowdown in tcp");
+	// puts("Calling freaking slowdown in tcp");
 	double decrease;  /* added for highspeed - sylvia */
 	double win, halfwin, decreasewin;
 	int slowstart = 0;

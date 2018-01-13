@@ -57,7 +57,8 @@ if __name__ == '__main__':
     conffile = config.remyconf
 
     simtime = 200
-    iterations = 128
+    # iterations = 128
+    iterations = 8
 
     # protolist = ['TCP/Newreno', 'TCP/Linux/cubic', 'TCP/Linux/compound', 'TCP/Vegas', 'TCP/Reno/XCP', 'TCP/Rational', 'Cubic/sfqCoDel']
 
