@@ -6,6 +6,8 @@ import math
 
 from plot_backend import plot_throughput
 
+from functools import reduce
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -32,7 +34,7 @@ acked_regexes = []
 sent_regexes = []
 for sender in range(number_of_senders):
 	acked_regexes.append(re.compile("^r.*\-s \d+ \-d "+str(sender)+" \-p ack.+\{.+ .+ (\d+) .+\}"))
-	sent_regexes.append(re.compile("^\+ -t (\d+\.\d+).*\-s "+str(sender)+" \-d \d+ \-p tcp -e (\d+).+\{.+ .+ (\d+) .+\}"))
+	sent_regexes.append(re.compile("^\+ -t (\d+\.?\d*).*\-s "+str(sender)+" \-d \d+ \-p tcp -e (\d+).+\{.+ .+ (\d+) .+\}"))
 
 for line in lines:
 
@@ -44,7 +46,7 @@ for line in lines:
 
 		sent_match = sent_regexes[sender].search(line)
 		# first match is the time stamp second match is the packet size in bytes, third one the ack number,
-		if sent_match is not None and int(sent_match.group(3)) >= 1:
+		if sent_match is not None and int(sent_match.group(3)) >= 1 and (len(sent[sender])==0 or int(sent_match.group(3)) > sent[sender][-1][0]):
 			sent[sender].append((int(sent_match.group(3)), int(sent_match.group(2)), float(sent_match.group(1))))
 
 # print("acked", [item[:100] for item in acked])
@@ -56,6 +58,11 @@ for sender in range(number_of_senders):
 	acked[sender] = set(acked[sender])
 	received.append([])
 	received[sender] = [item for item in sent[sender] if item[0] in acked[sender]]
+	only_ack_numbers = [item[0] for item in received[sender]]
+	# Make sure than only_ack_numbers really only contains ints and that all ack numbers are unique;
+	# no segment should be counted more than once.
+	assert(reduce(lambda acc, item: acc and item.__class__.__name__=="int", only_ack_numbers, True))
+	assert(len(only_ack_numbers) == len(set(only_ack_numbers)))
 	print("sender", sender, "len(sent)", len(sent[sender]), "len(received)", len(received[sender]))
 
 # print("received", [item[:100] for item in received])
@@ -64,7 +71,7 @@ values_to_plot = []
 bins = []
 
 # TIME_STEP = 0.03 # 30 ms
-TIME_STEP = 1.0
+TIME_STEP = 0.1
 for sender in range(number_of_senders):
 	values_to_plot.append([])
 	bins.append([])
