@@ -7,25 +7,29 @@ set opt(nsrc) $number_of_senders
 set opt(accessdelay) 1ms
 set opt(accessrate) 1000Mb
 set opt(bneckbw) 20Mb
-# set opt(delay) 49ms
 set opt(delay) 49ms
+# set opt(delay) 9ms
 set opt(infq) 1000
-set opt(maxq) 100
+set opt(maxq) 10
 set opt(tr) out
 set opt(tr) [lindex $argv 1]
 set opt(pktsize) 1210
 # Run for 10 minutes
+# set opt(simtime) 600.0s
 set opt(simtime) 600.0s
 # Because otherwise the default receive window in ns2 is tiny and congestion is never actually achieved because of the ridiculous receive window.
 set opt(rcvwin) 65536
-set opt(tcp) TCP/Newreno
-# set opt(tcp) TCP/Linux/cubic
+# set opt(tcp) TCP/Newreno
+set opt(tcp) TCP/Linux/cubic
 
 # set opt(sloss) 0.01
 set opt(sloss) 0.0
 
 #Open the NAM trace file
 if { [info exists opt(tr)] } {
+    if {[file exists $opt(tr).nam]} {
+        file delete $opt(tr).nam
+    }
     set nf [open $opt(tr).nam w]
     $ns namtrace-all $nf
     # $ns trace-all $nf
