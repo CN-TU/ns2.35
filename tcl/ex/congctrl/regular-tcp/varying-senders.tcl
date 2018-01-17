@@ -19,11 +19,11 @@ set opt(pktsize) 1210
 set opt(simtime) 600.0s
 # Because otherwise the default receive window in ns2 is tiny and congestion is never actually achieved because of the ridiculous receive window.
 set opt(rcvwin) 65536
-# set opt(tcp) TCP/Newreno
-set opt(tcp) TCP/Linux/cubic
+set opt(tcp) TCP/Newreno
+# set opt(tcp) TCP/Linux/cubic
 
-# set opt(sloss) 0.01
-set opt(sloss) 0.0
+set opt(sloss) 0.01
+# set opt(sloss) 0.0
 
 #Open the NAM trace file
 if { [info exists opt(tr)] } {
