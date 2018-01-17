@@ -96,125 +96,125 @@ public:
 	}
 } class_unicorn_newreno_tcp;
 
-void
-UnicornTcpAgent::slowdown(int how)
-{
-	// puts("Calling freaking slowdown in tcp-unicorn");
-	double decrease;  /* added for highspeed - sylvia */
-	double win, halfwin, decreasewin;
-	int slowstart = 0;
-	++ncwndcuts_;
-	if (!(how & TCP_IDLE) && !(how & NO_OUTSTANDING_DATA)){
-		++ncwndcuts1_;
-	}
-	// we are in slowstart for sure if cwnd < ssthresh
-	if (cwnd_ < ssthresh_)
-		slowstart = 1;
-        if (precision_reduce_) {
-		halfwin = windowd() / 2;
-                if (wnd_option_ == 6) {
-                        /* binomial controls */
-                        decreasewin = windowd() - (1.0-decrease_num_)*pow(windowd(),l_parameter_);
-                } else if (wnd_option_ == 8 && (cwnd_ > low_window_)) {
-                        /* experimental highspeed TCP */
-			decrease = decrease_param();
-			//if (decrease < 0.1)
-			//	decrease = 0.1;
-			decrease_num_ = decrease;
-                        decreasewin = windowd() - (decrease * windowd());
-                } else {
-	 		decreasewin = decrease_num_ * windowd();
-		}
-		win = windowd();
-	} else  {
-		int temp;
-		temp = (int)(window() / 2);
-		halfwin = (double) temp;
-                if (wnd_option_ == 6) {
-                        /* binomial controls */
-                        temp = (int)(window() - (1.0-decrease_num_)*pow(window(),l_parameter_));
-                } else if ((wnd_option_ == 8) && (cwnd_ > low_window_)) {
-                        /* experimental highspeed TCP */
-			decrease = decrease_param();
-			//if (decrease < 0.1)
-                        //       decrease = 0.1;
-			decrease_num_ = decrease;
-                        temp = (int)(windowd() - (decrease * windowd()));
-                } else {
- 			temp = (int)(decrease_num_ * window());
-		}
-		decreasewin = (double) temp;
-		win = (double) window();
-	}
-	if (how & CLOSE_SSTHRESH_HALF)
-		// For the first decrease, decrease by half
-		// even for non-standard values of decrease_num_.
-		if (first_decrease_ == 1 || slowstart ||
-			last_cwnd_action_ == CWND_ACTION_TIMEOUT) {
-			// Do we really want halfwin instead of decreasewin
-		// after a timeout?
-			ssthresh_ = (int) halfwin;
-		} else {
-			ssthresh_ = (int) decreasewin;
-		}
-	else if (how & CLOSE_SSTHRESH_DCTCP)
-		ssthresh_ = (int) ((1 - dctcp_alpha_/2.0) * windowd());
-        else if (how & THREE_QUARTER_SSTHRESH)
-		if (ssthresh_ < 3*cwnd_/4)
-			ssthresh_  = (int)(3*cwnd_/4);
-	if (how & CLOSE_CWND_HALF)
-		// For the first decrease, decrease by half
-		// even for non-standard values of decrease_num_.
-		if (first_decrease_ == 1 || slowstart || decrease_num_ == 0.5) {
-			cwnd_ = halfwin;
-		} else cwnd_ = decreasewin;
-	else if (how & CLOSE_CWND_DCTCP)
-		cwnd_ = (1 - dctcp_alpha_/2.0) * windowd();
-        else if (how & CWND_HALF_WITH_MIN) {
-		// We have not thought about how non-standard TCPs, with
-		// non-standard values of decrease_num_, should respond
-		// after quiescent periods.
-                cwnd_ = decreasewin;
-								if (cwnd_ < 1) {
-												puts("cwnd_ 2");
-												cwnd_ = initial_window();
-								}
-	}
-	else if (how & CLOSE_CWND_RESTART)
-		cwnd_ = int(wnd_restart_);
-	else if (how & CLOSE_CWND_INIT)
-		cwnd_ = int(wnd_init_);
-	else if (how & CLOSE_CWND_ONE) {
-		// puts("cwnd_ 3");
-		// FIXME: WTF is the window randomly set to 1 all the time and not to `initial_window()'?
-		cwnd_ = initial_window();
-	} else if (how & CLOSE_CWND_HALF_WAY) {
-		// cwnd_ = win - (win - W_used)/2 ;
-		cwnd_ = W_used + decrease_num_ * (win - W_used);
-                if (cwnd_ < 1) {
-												puts("cwnd_ 4");
-												cwnd_ = initial_window();
-								}
-	}
-	if (ssthresh_ < 2)
-		ssthresh_ = 2;
-	if (cwnd_ < 1) {
-		puts("cwnd_ 5");
-		cwnd_ = initial_window();
-	}
-		if (how & (CLOSE_CWND_HALF|CLOSE_CWND_RESTART|CLOSE_CWND_INIT|CLOSE_CWND_ONE|CLOSE_CWND_DCTCP))
-		cong_action_ = TRUE;
+// void
+// UnicornTcpAgent::slowdown(int how)
+// {
+// 	// puts("Calling freaking slowdown in tcp-unicorn");
+// 	double decrease;  /* added for highspeed - sylvia */
+// 	double win, halfwin, decreasewin;
+// 	int slowstart = 0;
+// 	++ncwndcuts_;
+// 	if (!(how & TCP_IDLE) && !(how & NO_OUTSTANDING_DATA)){
+// 		++ncwndcuts1_;
+// 	}
+// 	// we are in slowstart for sure if cwnd < ssthresh
+// 	if (cwnd_ < ssthresh_)
+// 		slowstart = 1;
+//         if (precision_reduce_) {
+// 		halfwin = windowd() / 2;
+//                 if (wnd_option_ == 6) {
+//                         /* binomial controls */
+//                         decreasewin = windowd() - (1.0-decrease_num_)*pow(windowd(),l_parameter_);
+//                 } else if (wnd_option_ == 8 && (cwnd_ > low_window_)) {
+//                         /* experimental highspeed TCP */
+// 			decrease = decrease_param();
+// 			//if (decrease < 0.1)
+// 			//	decrease = 0.1;
+// 			decrease_num_ = decrease;
+//                         decreasewin = windowd() - (decrease * windowd());
+//                 } else {
+// 	 		decreasewin = decrease_num_ * windowd();
+// 		}
+// 		win = windowd();
+// 	} else  {
+// 		int temp;
+// 		temp = (int)(window() / 2);
+// 		halfwin = (double) temp;
+//                 if (wnd_option_ == 6) {
+//                         /* binomial controls */
+//                         temp = (int)(window() - (1.0-decrease_num_)*pow(window(),l_parameter_));
+//                 } else if ((wnd_option_ == 8) && (cwnd_ > low_window_)) {
+//                         /* experimental highspeed TCP */
+// 			decrease = decrease_param();
+// 			//if (decrease < 0.1)
+//                         //       decrease = 0.1;
+// 			decrease_num_ = decrease;
+//                         temp = (int)(windowd() - (decrease * windowd()));
+//                 } else {
+//  			temp = (int)(decrease_num_ * window());
+// 		}
+// 		decreasewin = (double) temp;
+// 		win = (double) window();
+// 	}
+// 	if (how & CLOSE_SSTHRESH_HALF)
+// 		// For the first decrease, decrease by half
+// 		// even for non-standard values of decrease_num_.
+// 		if (first_decrease_ == 1 || slowstart ||
+// 			last_cwnd_action_ == CWND_ACTION_TIMEOUT) {
+// 			// Do we really want halfwin instead of decreasewin
+// 		// after a timeout?
+// 			ssthresh_ = (int) halfwin;
+// 		} else {
+// 			ssthresh_ = (int) decreasewin;
+// 		}
+// 	else if (how & CLOSE_SSTHRESH_DCTCP)
+// 		ssthresh_ = (int) ((1 - dctcp_alpha_/2.0) * windowd());
+//         else if (how & THREE_QUARTER_SSTHRESH)
+// 		if (ssthresh_ < 3*cwnd_/4)
+// 			ssthresh_  = (int)(3*cwnd_/4);
+// 	if (how & CLOSE_CWND_HALF)
+// 		// For the first decrease, decrease by half
+// 		// even for non-standard values of decrease_num_.
+// 		if (first_decrease_ == 1 || slowstart || decrease_num_ == 0.5) {
+// 			cwnd_ = halfwin;
+// 		} else cwnd_ = decreasewin;
+// 	else if (how & CLOSE_CWND_DCTCP)
+// 		cwnd_ = (1 - dctcp_alpha_/2.0) * windowd();
+//         else if (how & CWND_HALF_WITH_MIN) {
+// 		// We have not thought about how non-standard TCPs, with
+// 		// non-standard values of decrease_num_, should respond
+// 		// after quiescent periods.
+//                 cwnd_ = decreasewin;
+// 								if (cwnd_ < 1) {
+// 												puts("cwnd_ 2");
+// 												cwnd_ = initial_window();
+// 								}
+// 	}
+// 	else if (how & CLOSE_CWND_RESTART)
+// 		cwnd_ = int(wnd_restart_);
+// 	else if (how & CLOSE_CWND_INIT)
+// 		cwnd_ = int(wnd_init_);
+// 	else if (how & CLOSE_CWND_ONE) {
+// 		// puts("cwnd_ 3");
+// 		// FIXME: WTF is the window randomly set to 1 all the time and not to `initial_window()'?
+// 		cwnd_ = initial_window();
+// 	} else if (how & CLOSE_CWND_HALF_WAY) {
+// 		// cwnd_ = win - (win - W_used)/2 ;
+// 		cwnd_ = W_used + decrease_num_ * (win - W_used);
+//                 if (cwnd_ < 1) {
+// 												puts("cwnd_ 4");
+// 												cwnd_ = initial_window();
+// 								}
+// 	}
+// 	if (ssthresh_ < 2)
+// 		ssthresh_ = 2;
+// 	if (cwnd_ < 1) {
+// 		puts("cwnd_ 5");
+// 		cwnd_ = initial_window();
+// 	}
+// 		if (how & (CLOSE_CWND_HALF|CLOSE_CWND_RESTART|CLOSE_CWND_INIT|CLOSE_CWND_ONE|CLOSE_CWND_DCTCP))
+// 		cong_action_ = TRUE;
 
-	fcnt_ = count_ = 0;
-	if (first_decrease_ == 1)
-		first_decrease_ = 0;
-	// for event tracing slow start
-	if (cwnd_ == 1 || slowstart)
-		// Not sure if this is best way to capture slow_start
-		// This is probably tracing a superset of slowdowns of
-		// which all may not be slow_start's --Padma, 07/'01.
-		trace_event("SLOW_START");
-}
+// 	fcnt_ = count_ = 0;
+// 	if (first_decrease_ == 1)
+// 		first_decrease_ = 0;
+// 	// for event tracing slow start
+// 	if (cwnd_ == 1 || slowstart)
+// 		// Not sure if this is best way to capture slow_start
+// 		// This is probably tracing a superset of slowdowns of
+// 		// which all may not be slow_start's --Padma, 07/'01.
+// 		trace_event("SLOW_START");
+// }
 
 // void
 // UnicornTcpAgent::set_initial_window()

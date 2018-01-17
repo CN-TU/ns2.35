@@ -32,11 +32,6 @@
  * SUCH DAMAGE.
  */
 
-/*
- * January 2013 (hari): Patched in DCTCP changes for tcp.cc from
- * http://simula.stanford.edu/~alizade/Site/DCTCP_files/dctcp-ns2-rev1.0.tar.gz
- */
-
 #ifndef lint
 static const char rcsid[] =
     "@(#) $Header: /cvsroot/nsnam/ns-2/tcp/tcp.cc,v 1.182 2011/06/20 04:51:46 tom_henderson Exp $ (LBL)";
@@ -439,7 +434,6 @@ void
 TcpAgent::set_initial_window()
 {
 	if (syn_ && delay_growth_) {
-		// puts("tcp.cc: cwnd_ 1");
 		cwnd_ = 1.0;
 		syn_connects_ = 0;
 	} else
@@ -1257,7 +1251,6 @@ void TcpAgent::opencwnd()
 void
 TcpAgent::slowdown(int how)
 {
-	// puts("Calling freaking slowdown in tcp");
 	double decrease;  /* added for highspeed - sylvia */
 	double win, halfwin, decreasewin;
 	int slowstart = 0;
@@ -1333,34 +1326,26 @@ TcpAgent::slowdown(int how)
 		// non-standard values of decrease_num_, should respond
 		// after quiescent periods.
                 cwnd_ = decreasewin;
-								if (cwnd_ < 1) {
-												// puts("tcp.cc: cwnd_ 2");
-												cwnd_ = 1;
-								}
+                if (cwnd_ < 1)
+                        cwnd_ = 1;
 	}
 	else if (how & CLOSE_CWND_RESTART)
 		cwnd_ = int(wnd_restart_);
 	else if (how & CLOSE_CWND_INIT)
 		cwnd_ = int(wnd_init_);
-	else if (how & CLOSE_CWND_ONE) {
-		// puts("tcp.cc: cwnd_ 3");
-		// FIXME: WTF is the window randomly set to 1 all the time and not to `initial_window()'?
+	else if (how & CLOSE_CWND_ONE)
 		cwnd_ = 1;
-	} else if (how & CLOSE_CWND_HALF_WAY) {
+	else if (how & CLOSE_CWND_HALF_WAY) {
 		// cwnd_ = win - (win - W_used)/2 ;
 		cwnd_ = W_used + decrease_num_ * (win - W_used);
-                if (cwnd_ < 1) {
-												// puts("tcp.cc: cwnd_ 4");
-												cwnd_ = 1;
-								}
+                if (cwnd_ < 1)
+                        cwnd_ = 1;
 	}
 	if (ssthresh_ < 2)
 		ssthresh_ = 2;
-	if (cwnd_ < 1) {
-		// puts("tcp.cc: cwnd_ 5");
+	if (cwnd_ < 1)
 		cwnd_ = 1;
-	}
-		if (how & (CLOSE_CWND_HALF|CLOSE_CWND_RESTART|CLOSE_CWND_INIT|CLOSE_CWND_ONE|CLOSE_CWND_DCTCP))
+	if (how & (CLOSE_CWND_HALF|CLOSE_CWND_RESTART|CLOSE_CWND_INIT|CLOSE_CWND_ONE|CLOSE_CWND_DCTCP))
 		cong_action_ = TRUE;
 
 	fcnt_ = count_ = 0;
@@ -1765,7 +1750,6 @@ void TcpAgent::spurious_timeout()
 		/*
 		 * slow start, but without retransmissions
 		 */
-		// puts("tcp.cc: cwnd_ 6");
 		cwnd_ = 1; break;
 	}
 
@@ -1900,10 +1884,7 @@ void TcpAgent::timeout(int tno)
 		pipe_prev_ = (window() > ssthresh_) ?
 			window() : (int)ssthresh_;
 
-	        if (cwnd_ < 1) {
-						// puts("tcp.cc: cwnd_ 7");
-						cwnd_ = 1;
-					}
+	        if (cwnd_ < 1) cwnd_ = 1;
 		if (qs_approved_ == 1) qs_approved_ = 0;
 		if (highest_ack_ == maxseq_ && !slow_start_restart_) {
 			/*
@@ -1929,14 +1910,13 @@ void TcpAgent::timeout(int tno)
                                  * initial windows.  Bugfix from Mark Allman.
                                  */
                                 wnd_init_ = 1;
-			if (highest_ack_ == maxseq_ && restart_bugfix_) {
+			if (highest_ack_ == maxseq_ && restart_bugfix_)
 			       /*
 				* if there is no outstanding data, don't cut
 				* down ssthresh_.
 				*/
-				// puts("sent all data");
 				slowdown(CLOSE_CWND_ONE|NO_OUTSTANDING_DATA);
-			} else if (highest_ack_ < recover_ &&
+			else if (highest_ack_ < recover_ &&
 			  last_cwnd_action_ == CWND_ACTION_ECN) {
 			       /*
 				* if we are in recovery from a recent ECN,
@@ -2082,7 +2062,6 @@ void TcpAgent::closecwnd(int how)
 		ssthresh_ = int( window() / 2 );
 		if (ssthresh_ < 2)
 			ssthresh_ = 2;
-		// puts("tcp.cc: cwnd_ 8");
 		cwnd_ = 1;
 		break;
 
