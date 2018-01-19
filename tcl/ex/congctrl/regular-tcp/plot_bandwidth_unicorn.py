@@ -54,4 +54,4 @@ with open(file_name, newline='') as csvfile:
 values_to_plot = [[x/100 for x in item] for item in values_to_plot]
 lost = [[x/100 for x in item] for item in lost]
 
-plot_throughput(bins, values_to_plot, bins, lost)
+plot_throughput(bins, values_to_plot, lost)
