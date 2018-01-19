@@ -1,3 +1,11 @@
+# COMAND TO EXECUTE:
+# my_command='../../../../../bin/ns varying-senders.tcl ${sender_type} ${congestion_modified}_${sender_type}_${loss} ${congestion} ${loss}' && for congestion in `echo "Newreno Linux/cubic" | tr " " "\n"` ; do for sender_type in `echo "1 2 4 8" | tr " " "\n"` ; do for loss in `echo "0 0.01" | tr " " "\n"` ; do export congestion ; export congestion_modified=`echo ${congestion} | sed 's/Linux\///'` ; export sender_type ; export loss ; sleep 0 && local_command=`bash -c "echo $my_command"` && echo $local_command && eval "$local_command &" ; done ; done ; done
+
+set trace_directory nam_traces
+if {[expr {![file exists $trace_directory]}]} {
+    file mkdir $trace_directory
+}
+
 set number_of_senders [lindex $argv 0]
 
 #Create a simulator object
@@ -11,19 +19,18 @@ set opt(delay) 49ms
 # set opt(delay) 9ms
 set opt(infq) 1000
 set opt(maxq) 10
-set opt(tr) out
-set opt(tr) [lindex $argv 1]
+set opt(tr) ${trace_directory}/[lindex $argv 1]
 set opt(pktsize) 1210
 # Run for 10 minutes
 # set opt(simtime) 600.0s
-set opt(simtime) 50.0s
+set opt(simtime) 600.0s
 # Because otherwise the default receive window in ns2 is tiny and congestion is never actually achieved because of the ridiculous receive window.
 set opt(rcvwin) 65536
-set opt(tcp) TCP/Newreno
+set opt(tcp) TCP/[lindex $argv 2]
+# set opt(tcp) TCP/Newreno
 # set opt(tcp) TCP/Linux/cubic
 
-# set opt(sloss) 0.01
-set opt(sloss) 0.0
+set opt(sloss) [lindex $argv 3]
 
 #Open the NAM trace file
 if { [info exists opt(tr)] } {
