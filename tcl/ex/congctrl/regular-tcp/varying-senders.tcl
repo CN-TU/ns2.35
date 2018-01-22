@@ -111,12 +111,14 @@ proc create-tcp-connections {} {
             # puts $opt(tcp)
             # echo
         }
+        puts $opt(tcp)
         set tcp [new Agent/$opt(tcp)]
         if { [info exists linuxcc] } {
             $ns at 0.0 "$tcp select_ca $linuxcc"
             $ns at 0.0 "$tcp set_ca_default_param linux debug_level 2"
         }
         # set tcp [new Agent/TCP/Newreno]
+        puts $tcp
         $ns attach-agent $s($i) $tcp
         set sink [new Agent/TCPSink]
         $ns attach-agent $opt(d) $sink
