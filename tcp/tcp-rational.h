@@ -20,8 +20,9 @@
 class RationalTcpAgent : public virtual TcpAgent {
 private:
 	const WhiskerTree *_whiskers;
-	Memory _memory;
-	double _intersend_time;
+	RemyMemory _memory;
+	//	double _intersend_time;
+	TracedDouble _intersend_time;
 
 public:
 	RationalTcpAgent();
@@ -40,12 +41,13 @@ public:
 protected:
 	virtual void delay_bind_init_all();
 	virtual int delay_bind_dispatch(const char *varName, const char *localName, TclObject *tracer);
+	virtual void traceVar(TracedVar *v);
 	int tracewhisk_;	// trace whiskers?
 	double _last_send_time;
 	int count_bytes_acked_;
 };
 
-/* 
+/*
  * Rational TCP with Reno.
  */
 
@@ -62,7 +64,7 @@ public:
 	virtual void output( int seqno, int reason ) { _last_send_time = Scheduler::instance().clock(); RenoTcpAgent::output( seqno, reason ); }
 };
 
-/* 
+/*
  * Rational TCP with NewReno.
  */
 class RationalNewRenoTcpAgent : public virtual NewRenoTcpAgent, public RationalTcpAgent {
