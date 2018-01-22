@@ -75,9 +75,7 @@ INCLUDES = \
 	-I./diffusion3/lib/nr -I./diffusion3/ns \
 	-I./diffusion3/filter_core -I./asim/ -I./qs \
 	-I./diffserv -I./satellite \
-	-I./wpan \
-	-I./tcp/unicorn/src \
-	-I./tcp/unicorn/protobufs
+	-I./wpan
 
 LIB	= \
 	@V_LIBS@ \
@@ -210,7 +208,7 @@ OBJ_CC = \
 	common/ivs.o \
 	common/messpass.o common/tp.o common/tpm.o apps/worm.o \
 	tcp/tcp.o tcp/tcp-sink.o tcp/tcp-reno.o \
-	tcp/tcp-newreno.o tcp/tcp-rational.o tcp/tcp-unicorn.o tcp/tcp-fast.o \
+	tcp/tcp-newreno.o tcp/tcp-rational.o tcp/tcp-fast.o \
 	tcp/remy/dna.pb.o tcp/remy/memory.o tcp/remy/memoryrange.o tcp/remy/whisker.o tcp/remy/whiskertree.o \
 	tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o \
 	baytcp/tcp-full-bay.o baytcp/ftpc.o baytcp/ftps.o \
@@ -355,12 +353,7 @@ OBJ_CC = \
 	wpan/p802_15_4sscs.o wpan/p802_15_4timer.o \
 	wpan/p802_15_4trace.o wpan/p802_15_4transac.o \
 	apps/pbc.o \
-	tcp/unicorn/src/memory.o \
-	tcp/unicorn/src/rainbow.o \
-	tcp/unicorn/src/unicorn.o \
 	@V_STLOBJ@
-
-tcp/tcp-unicorn.o	tcp/unicorn/src/rainbow.o	tcp/unicorn/src/unicorn.o: EXTRA_FLAGS := $(shell python3-config --cflags | sed 's/\-Wstrict\-prototypes//' | sed 's/\-DNDEBUG//')
 
 # don't allow comments to follow continuation lines
 
