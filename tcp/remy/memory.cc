@@ -42,7 +42,7 @@ void RemyMemory::packets_received( const vector< RemyPacket > & packets )
   }
 }
 
-RemyMemory::RemyMemory( const RemyBuffers::Memory & dna )
+RemyMemory::RemyMemory( const RemyRemyBuffers::Memory & dna )
   : _rec_send_ewma( dna.rec_send_ewma() ),
     _rec_rec_ewma( dna.rec_rec_ewma() ),
     _rtt_ratio( dna.rtt_ratio() ),

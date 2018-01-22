@@ -4,7 +4,7 @@
 #include <string>
 
 #include "memory.hh"
-#include "dna.pb.h"
+#include "remydna.pb.h"
 
 class MemoryRange {
 private:
@@ -19,7 +19,7 @@ public:
 
   bool operator==( const MemoryRange & other ) const;
 
-  MemoryRange( const RemyBuffers::MemoryRange & dna );
+  MemoryRange( const RemyRemyBuffers::MemoryRange & dna );
 
   std::string str( void ) const;
 };

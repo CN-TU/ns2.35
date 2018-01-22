@@ -5,7 +5,7 @@
 #include <string>
 
 #include "packet.hh"
-#include "dna.pb.h"
+#include "remydna.pb.h"
 
 class RemyMemory {
 public:
@@ -40,7 +40,7 @@ public:
   bool operator<( const RemyMemory & other ) const { return (_rec_send_ewma < other._rec_send_ewma) && (_rec_rec_ewma < other._rec_rec_ewma) && (_rtt_ratio < other._rtt_ratio); }
   bool operator==( const RemyMemory & other ) const { return (_rec_send_ewma == other._rec_send_ewma) && (_rec_rec_ewma == _rec_rec_ewma) && (_rtt_ratio == other._rtt_ratio); }
 
-  RemyMemory( const RemyBuffers::Memory & dna );
+  RemyMemory( const RemyRemyBuffers::Memory & dna );
 
   std::string str( void ) const;
 };

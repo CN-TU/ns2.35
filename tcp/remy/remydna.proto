@@ -1,4 +1,4 @@
-package RemyBuffers;
+package RemyRemyBuffers;
 
 message WhiskerTree {
   optional MemoryRange domain = 1;

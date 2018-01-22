@@ -37,7 +37,7 @@ UnicornTcpAgent::UnicornTcpAgent() : Unicorn(true)
 	// }
 
 	// /* parse whisker definition */
-	// RemyBuffers::WhiskerTree tree;
+	// RemyRemyBuffers::WhiskerTree tree;
 	// if ( !tree.ParseFromFileDescriptor( fd ) ) {
 	// 	fprintf( stderr, "RemyTCP: Could not parse whiskers in \"%s\".\n", filename );
 	// 	throw 1;

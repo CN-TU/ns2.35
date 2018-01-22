@@ -47,7 +47,7 @@ bool WhiskerTree::is_leaf( void ) const
   return !_leaf.empty();
 }
 
-WhiskerTree::WhiskerTree( const RemyBuffers::WhiskerTree & dna )
+WhiskerTree::WhiskerTree( const RemyRemyBuffers::WhiskerTree & dna )
   : _domain( dna.domain() ),
     _children(),
     _leaf()

@@ -4,7 +4,7 @@
 #include <string>
 
 #include "memoryrange.hh"
-#include "dna.pb.h"
+#include "remydna.pb.h"
 
 class Whisker {
 private:
@@ -19,7 +19,7 @@ public:
   const double & intersend( void ) const { return _intersend; }
   const MemoryRange & domain( void ) const { return _domain; }
 
-  Whisker( const RemyBuffers::Whisker & dna );
+  Whisker( const RemyRemyBuffers::Whisker & dna );
   std::string str( void ) const;
 };
 

@@ -12,7 +12,7 @@ bool MemoryRange::operator==( const MemoryRange & other ) const
   return (_lower == other._lower) && (_upper == other._upper); /* ignore median estimator for now */
 }
 
-MemoryRange::MemoryRange( const RemyBuffers::MemoryRange & dna )
+MemoryRange::MemoryRange( const RemyRemyBuffers::MemoryRange & dna )
   : _lower( dna.lower() ),
     _upper( dna.upper() )
 {

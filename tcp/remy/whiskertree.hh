@@ -3,7 +3,7 @@
 
 #include "whisker.hh"
 #include "memoryrange.hh"
-#include "dna.pb.h"
+#include "remydna.pb.h"
 
 class WhiskerTree {
 private:
@@ -19,7 +19,7 @@ public:
 
   bool is_leaf( void ) const;
 
-  WhiskerTree( const RemyBuffers::WhiskerTree & dna );
+  WhiskerTree( const RemyRemyBuffers::WhiskerTree & dna );
 };
 
 #endif
