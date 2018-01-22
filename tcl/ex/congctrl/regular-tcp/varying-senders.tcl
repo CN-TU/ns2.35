@@ -11,6 +11,7 @@ set number_of_senders [lindex $argv 0]
 #Create a simulator object
 set ns [new Simulator]
 
+set opt(whiskerdir) ../../../../tcp/remy/rats/new/
 set opt(nsrc) $number_of_senders
 set opt(accessdelay) 1ms
 set opt(accessrate) 1000Mb
@@ -102,6 +103,13 @@ proc create-tcp-connections {} {
         if { [string range $opt(tcp) 0 9] == "TCP/Linux/"} {
             set linuxcc [ string range $opt(tcp) 10 [string length $opt(tcp)] ]
             set opt(tcp) "TCP/Linux"
+        }
+        # puts [ string range $opt(tcp) 0 12]
+        if { [ string range $opt(tcp) 0 12] == "TCP/Rational/" } {
+            set ::env(WHISKERS) $opt(whiskerdir)[string range $opt(tcp) 12 [string length $opt(tcp)]]
+            set opt(tcp) "TCP/Rational"
+            # puts $opt(tcp)
+            # echo
         }
         set tcp [new Agent/$opt(tcp)]
         if { [info exists linuxcc] } {
