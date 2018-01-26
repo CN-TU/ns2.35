@@ -9,7 +9,7 @@ from plot_backend import plot_throughput
 from functools import reduce
 
 def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+  print(*args, file=sys.stderr, **kwargs)
 
 def parse_file(file_name, number_of_senders):
 
@@ -228,8 +228,13 @@ if __name__ == '__main__':
 	try:
 		number_of_senders = int(sys.argv[2])
 	except:
-		eprint("Couldn't parse the number of senders, assuming 1.")
-		number_of_senders = 1
+		regexp = re.compile("^.*_(\d+)_.*\.nam$")
+
+		match = regexp.search(file_name)
+		# if acked_match is not None and int(acked_match.group(2)) >= 1:
+		if match is not None and int(acked_match.group(2)) >= 1:
+			eprint("Couldn't parse the number of senders, assuming 1.")
+			number_of_senders = 1
 
 	bins_received, values_to_plot_received, values_to_plot_lost = parse_file(file_name, number_of_senders)
 	plot_throughput(bins_received, values_to_plot_received, values_to_plot_lost)

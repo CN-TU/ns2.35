@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     conffile = config.remyconf
 
-    simtime = 200
+    simtime = 100
     # iterations = 128
     iterations = 8
 

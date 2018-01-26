@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import re
 import plot_bandwidth_unicorn
@@ -10,15 +11,20 @@ all_file_names = list(map(lambda line: line[:-1], sys.stdin.readlines()))
 # all_file_names = sys.argv[1:]
 # print("all_file_names", all_file_names)
 
-regexp = re.compile("^.*(\d+)_(\d+)_.*_(\d+).0.csv$")
+regexp = re.compile("^.*(\d+)_(\d+)_(.*)_(\d+)(?:_(.*))?\.0\.csv$")
 
 parameter_to_results_dictionary = {}
 
 for file_name in all_file_names:
 	match = regexp.search(file_name)
-	assert(match is not None)
+	if match is None:
+		continue
+	# assert(match is not None)
 	# key is "{sender_type}_{loss_type}"
-	key = str(match.group(2))+"_"+str(match.group(1))
+	key = match.group(2)+"_"+match.group(1)
+	if match.group(5) is not None and match.group(3) == match.group(5):
+		key += "_again"
+	# print("key", key)
 	if not key in parameter_to_results_dictionary:
 		parameter_to_results_dictionary[key] = []
 	parameter_to_results_dictionary[key].append(list(map(lambda thing: np.array(thing), plot_bandwidth_unicorn.parse_file(file_name))))
@@ -45,10 +51,21 @@ print("max_length", max_reference_length)
 for key in sorted(parameter_to_results_dictionary.keys()):
 	print(key)
 	all_stuff = parameter_to_results_dictionary[key]
-	flattened_throughput = [np.append(item, np.zeros(reference_length-len(item))) for sublist in list(map(lambda item: item[1], all_stuff)) for item in sublist]
+	flattened_throughput = [item for sublist in list(map(lambda item: item[1], all_stuff)) for item in sublist]
+	for item in flattened_throughput:
+		if len(item) < reference_length:
+			print("len too small", len(item))
+	too_small_indices = [index for index, x in enumerate(flattened_throughput) if len(x) < reference_length]
+	for index in too_small_indices:
+		del flattened_throughput[index]
+	print("too_small_indices", too_small_indices)
+	flattened_throughput = [np.append(item, np.zeros(reference_length-len(item))) for item in flattened_throughput]
 	# print(list(map(lambda item: item.shape, flattened_throughput)))
 	flattened_throughput = np.vstack(flattened_throughput)
-	original_flattened_lost = [np.append(item, np.zeros(reference_length-len(item))) for sublist in list(map(lambda item: item[2], all_stuff)) for item in sublist]
+	original_flattened_lost = [item for sublist in list(map(lambda item: item[2], all_stuff)) for item in sublist]
+	for index in too_small_indices:
+		del original_flattened_lost[index]
+	original_flattened_lost = [np.append(item, np.zeros(reference_length-len(item))) for item in original_flattened_lost]
 	# print(list(map(lambda item: item.shape, flattened_lost)))
 	original_flattened_lost = np.vstack(original_flattened_lost)
 	flattened_lost = (original_flattened_lost/(original_flattened_lost+flattened_throughput))
@@ -61,8 +78,19 @@ for key in sorted(parameter_to_results_dictionary.keys()):
 	sum_dict_lost[key] = intermediate_lost/(np.sum(flattened_throughput, axis=1)+intermediate_lost)
 	print("Done")
 
-# for key in sorted(parameter_to_results_dictionary.keys()):
-# 	plot_backend.plot_with_std(key, mean_and_std_dict_results[key], mean_and_std_dict_lost[key])
+file_name = all_file_names[0]
+print("file_name", file_name)
+last_slash = file_name.rfind("/")
+actual_path = file_name[:last_slash+1]
+last_part = file_name[last_slash+1:]
+directory = actual_path + "figures"
+if not os.path.exists(directory):
+	os.makedirs(directory)
+
+for key in sorted(parameter_to_results_dictionary.keys()):
+	full_path = actual_path + "figures/" + key + ".png"
+	plot_backend.plot_with_std(key, mean_and_std_dict_results[key], mean_and_std_dict_lost[key], output=full_path)
+	# plot_backend.plot_with_std(key, mean_and_std_dict_results[key], mean_and_std_dict_lost[key])
 
 plot_backend.plot_total_throughput(sorted(parameter_to_results_dictionary.keys()), sum_dict_results, sum_dict_lost)
 

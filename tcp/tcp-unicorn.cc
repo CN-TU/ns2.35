@@ -16,10 +16,10 @@
 #include "tcp-unicorn.h"
 
 // FIXME: Don't hardcode cooperative and delay delta
-UnicornTcpAgent::UnicornTcpAgent() : Unicorn(true)
+UnicornTcpAgent::UnicornTcpAgent() : Unicorn()
 {
 	bind_bool("count_bytes_acked_", &count_bytes_acked_);
-	_training = false;
+	_training = true;
 	// FIXME: I guess that this means that the maximum burst length is disabled?
 	maxburst_ = 0;
 	/* get whisker filename */
@@ -58,12 +58,12 @@ UnicornTcpAgent::~UnicornTcpAgent() {}
 
 void
 UnicornTcpAgent::delay_bind_init_all() {
-	printf("%lu: In delay bind init all\n", _thread_id);
+	// printf("%lu: In delay bind init all\n", _thread_id);
 	TcpAgent::delay_bind_init_all();
 	TcpAgent::reset();
-	const double tickno = Scheduler::instance().clock() * 1000;
-	Unicorn::reset(tickno);
-	cwnd_ = _the_window;
+	// const double tickno = Scheduler::instance().clock() * 1000;
+	// Unicorn::reset(tickno);
+	// cwnd_ = _the_window;
 }
 
 int
@@ -235,7 +235,7 @@ double
 UnicornTcpAgent::initial_window()
 {
 	const double tickno = Scheduler::instance().clock() * 1000;
-	// printf("%lu: In initial window at %f\n", _thread_id, tickno);
+	printf("%lu: In initial window at %f\n", _thread_id, tickno);
 	Unicorn::reset(tickno);
 	UnicornTcpAgent::update_cwnd_and_pacing();
 	return cwnd_;
@@ -339,6 +339,8 @@ UnicornTcpAgent::recv_newack_helper(Packet *pkt)
 	 * Otherwise, ackcount=1 just as in standard TCP.
 	 */
 	if (count_bytes_acked_) {
+		// We currently don't want to deal with bytes.
+		assert(false);
 		ackcount = tcph->seqno() - last_ack_;
 	} else {
 		ackcount = 1;
@@ -350,6 +352,7 @@ UnicornTcpAgent::recv_newack_helper(Packet *pkt)
 	/* if the connection is done, call finish() */
 	if ((highest_ack_ >= curseq_-1) && !closed_) {
 		closed_ = 1;
+		printf("%lu: Calling finish\n", _thread_id);
 		finish();
 	}
 }
